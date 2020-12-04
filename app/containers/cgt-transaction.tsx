@@ -27,6 +27,48 @@ const SetupCGT = () => {
     const [instrumentDate, setInstrumentDate] = useState('');
     const [grossAmount, setGrossAmount] = useState('');
     const [netAmount, setNetAmount] = useState('');
+
+
+    const [trx_id, setTrx_id] = useState<string>('')
+    const tx = sessionStorage.getItem('rejectedTxName') || '';
+    React.useEffect(() => {
+        const txName = sessionStorage.getItem('rejectedTxName') || '';
+        const flag = sessionStorage.getItem('rejectedFlag') || false;
+        if (flag && txName === 'cgt') {
+            const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+            setAmcName(obj.amc_name)
+            setInstrumentDate(obj.instrument_date);
+            setInstrumentType(obj.instrument_type);
+            setTrx_id(obj.txn_id)
+            setInstrumentNo(obj.instrument_no)
+            setNetAmount(obj.net_amount)
+            setFund(obj.fund);
+            setAccNo(obj.account_no);
+            setAmcName(obj.amc_name);
+            const beneobj = {
+                'account_name': obj.name_of_beneficiary,
+                'bank_name': obj.beneficiary_bank,
+                'branch_name': obj.beneficiary_branch,
+                'account_title': obj.beneficiary_account
+            }
+            setBeneData(beneobj);
+            setFilioNo(obj.folio_no)
+            SetMot(obj.type_of_transaction);
+            setGrossAmount(obj.gross_amount);
+            const fetchAmcFirst = async () => {
+                try {
+                    const amcResponse = await getAmc(email);
+                    setAmcdata(amcResponse.data.data);
+                    amcResponse.data.data.map((amc: any) => {
+                        if (amc.name === obj.amc_name) {
+                            getfundAndAccountByAmcCode(amc.amc_code)
+                        }
+                    });
+                } catch (error) { }
+            };
+            fetchAmcFirst();
+        }
+    }, [])
     // const [fileUpload, setFileUpload] = useState('');
     const email = sessionStorage.getItem('email') || '';
     const getUnitHolderDetialByFolioNumber = async (code: string) => {
@@ -64,7 +106,9 @@ const SetupCGT = () => {
     const [accountNoData, setAccountNoData] = useState<any>([]);
     const [MOTData, setMOTData] = useState<any>([]);
     const [iTypeData, setITypeData] = useState<any>([]);
+    const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
     const getfundAndAccountByAmcCode = async (code: string) => {
+        setAccFundLoading(true);
         allFunds.length = 0;
         setAllFunds(allFunds)
         //get funds by amc for dropdown
@@ -76,6 +120,7 @@ const SetupCGT = () => {
             const accResponse = await getAccountByAmc(email, code);
             setAccountNoData(accResponse.data.data);
         } catch (error) { }
+        setAccFundLoading(false);
     }
     React.useEffect(() => {
         const fetchAmc = async () => {
@@ -176,7 +221,7 @@ const SetupCGT = () => {
         if (isValid) {
             setLoading(true);
             try {
-                const response = await addCgtTransaction(email, fund, accNo, beneData.account_name, mot, instrumentDate, instrumentNo, instrumentType, grossAmount, netAmount, amcName);
+                const response = await addCgtTransaction(email, fund, accNo, beneData.account_name, mot, instrumentDate, instrumentNo, instrumentType, grossAmount, netAmount, amcName, trx_id, folioNo);
                 setAmcName('');
                 setFund('');
                 setAccNo('');
@@ -189,6 +234,10 @@ const SetupCGT = () => {
                 setGrossAmount('');
                 SetMot('');
                 setNetAmount('');
+                setTrx_id('');
+                sessionStorage.removeItem('rejectedTxObj');
+                sessionStorage.removeItem('rejectedTxName');
+                sessionStorage.removeItem('rejectedFlag');
                 toast.success(response.data.message);
             } catch (error) {
                 console.log(error.response.data.message);
@@ -205,53 +254,65 @@ const SetupCGT = () => {
                 <ToastContainer limit={1} />
                 <Header />
                 <div className="body-pad">
-                    <h1 className="mb-1">CGT / WHT / SST - Transaction</h1>
+                    <h1 className="mb-1">{tx === 'cgt' ? 'Edit - CGT / WHT / SST - Transaction' : 'CGT / WHT / SST - Transaction'}</h1>
                     <div className="form-holder">
                         <Row>
-                            <Col md="6">
+                            {/* <Col md="6">
                                 <div className="input-holder left">
                                     <p className="label">AMC Name</p>
-                                    <div className="input-1">
-                                        <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                                            console.log(e.target)
-                                            let value = amcdata.filter((item: any) => {
-                                                return item.amc_code === e.target.value;
-                                            })
-                                            setAmcName(value[0].name);
-                                            setAmcError('');
-                                            getfundAndAccountByAmcCode(e.target.value);
-                                        }}>
-                                            <option value="" defaultChecked hidden> Select An AMC</option>
-                                            {renderAmcDropdown()}
-                                        </select>
-                                        {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                                    {tx === 'cgt' ?
+                                        <input type="text" className="input-1 " style={{ opacity: '0.6' }} value={amcName} readOnly />
+                                        :
+                                        <div className="input-1">
+                                            <select className="input-1" defaultValue={amcName} onChange={(e) => {
+                                                console.log(e.target)
+                                                let value = amcdata.filter((item: any) => {
+                                                    return item.amc_code === e.target.value;
+                                                })
+                                                setAmcName(value[0].name);
+                                                setAmcError('');
+                                                getfundAndAccountByAmcCode(e.target.value);
+                                            }}>
+                                                <option value="" defaultChecked hidden> Select An AMC</option>
+                                                {renderAmcDropdown()}
+                                            </select>
+                                            {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                                        </div>}
+                                </div>
+                            </Col> */}
+                            <Col md="6">
+                                <div className="input-holder left">
+                                    <p className="label">Account No</p>
+                                    <div className="input-1" >
+                                        {accFundLoading ?
+                                            <div className="input-1">
+                                                <div className="ml-2">Account Loading</div>
+                                                <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                                            </div>
+                                            :
+                                            <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                                                <option value="" defaultChecked hidden> Select Account</option>
+                                                {renderAccountNoDropdown()}
+                                            </select>}
+                                        {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                                     </div>
                                 </div>
                             </Col>
                             <Col md="6">
                                 <div className="input-holder right">
                                     <p className="label">Fund Name</p>
-                                    <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                                    <div className="input-1" data-tip="First Select Amc">
-                                        <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                                            <option value="" defaultChecked hidden> Select Fund</option>
-                                            {renderFundsDropdown()}
-                                        </select>
+                                    <div className="input-1">
+                                        {accFundLoading ?
+                                            <div className="input-1">
+                                                <div className="ml-2">Fund Loading</div>
+                                                <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                                            </div>
+                                            :
+                                            <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                                                <option value="" defaultChecked hidden> Select Fund</option>
+                                                {renderFundsDropdown()}
+                                            </select>}
                                         {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                                    </div>
-                                </div>
-                            </Col>
-                        </Row>
-                        <Row>
-                            <Col md="6">
-                                <div className="input-holder left">
-                                    <p className="label">Account No</p>
-                                    <div className="input-1" data-tip="First Select Amc">
-                                        <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                                            <option value="" defaultChecked hidden> Select Account</option>
-                                            {renderAccountNoDropdown()}
-                                        </select>
-                                        {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                                     </div>
                                 </div>
                             </Col>
@@ -394,10 +455,12 @@ const SetupCGT = () => {
                                 </div>
                             </Col>
                         </Row>
-                        <button className="btn-3" onClick={AddCGTTransaction} disabled={Boolean(Loading)}>
-                            {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-                        </button>
+                        <div className="hov">
+                            <button className="btn-3" onClick={AddCGTTransaction} disabled={Boolean(Loading)}>
+                                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span className="login-txt"> Loading...</span></> : <p>{tx === 'cgt' ? 'Edit' : 'Create'}</p>}
+                            </button>
+                        </div>
                     </div>
 
                 </div>

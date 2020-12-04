@@ -130,45 +130,45 @@ const buildDefaultTemplate = (data, browserWindow) => {
       {
         label: "Transaction",
         enabled: true,
-        submenu: [
-          {
-            enabled: false,
-            label: "Pending Transaction",
-            click() {
-              mainWindow.webContents.send("navigate", "/pending-transactions");
-            }
-          },
-        ],
+        click() {
+          mainWindow.webContents.send("navigate", "/pending-transactions");
+        }
       },
       {
         label: "Concerned Officer",
         enabled: true,
         submenu: [
           {
-            label: "Create Transaction",
-            enabled: false,
             click() {
               console.log("Click");
-              mainWindow.webContents.send("navigate", "/txn-type");
+              mainWindow.webContents.send("navigate", "/officer-listing");
             },
+            enabled: true,
+            label: "Listing",
           },
           {
+            enabled: true,
             click() {
               console.log("Click");
-              mainWindow.webContents.send("navigate", "/rejected-transactions");
+              mainWindow.webContents.send("navigate", "/authorizer-listing");
             },
-            enabled: false,
-            label: "Rejected Transaction",
-          },
-          {
-            enabled: false,
-            click() {
-              console.log("Click");
-              mainWindow.webContents.send("navigate", "/transaction-listing");
-            },
-            label: "Transaction Listing",
+            label: "Authorizer",
           },
         ],
+      },
+      {
+        label: "Create Transaction",
+        enabled: true,
+        click() {
+          mainWindow.webContents.send("navigate", "/txn-type");
+        }
+      },
+      {
+        label: "Rejected",
+        enabled: true,
+        click() {
+          mainWindow.webContents.send("navigate", "/rejected-transactions");
+        }
       },
       {
         label: "Reviewer",
@@ -178,7 +178,7 @@ const buildDefaultTemplate = (data, browserWindow) => {
             label: "AMC-Client",
             enabled: true,
             click() {
-              mainWindow.webContents.send("navigate", "/comp-sign-transactions/compliance");
+              mainWindow.webContents.send("navigate", "/amc-client");
             }
           },
           {
@@ -244,53 +244,63 @@ const buildDefaultTemplate = (data, browserWindow) => {
       {
         label: "Transaction",
         enabled: true,
-        submenu: [
-          {
-            enabled: false,
-            label: "Pending Transaction",
-            click() {
-              mainWindow.webContents.send("navigate", "/pending-transactions");
-            }
-          },
-        ],
+        click() {
+          mainWindow.webContents.send("navigate", "/pending-transactions");
+        }
+        // submenu: [
+        //   {
+        //     enabled: false,
+        //     label: "Pending Transaction",
+        //     click() {
+        //       mainWindow.webContents.send("navigate", "/pending-transactions");
+        //     }
+        //   },
+        // ],
       },
       {
         label: "Concerned Officer",
         enabled: true,
         submenu: [
           {
-            label: "Create Transaction",
-            enabled: false,
             click() {
               console.log("Click");
-              mainWindow.webContents.send("navigate", "/txn-type");
+              mainWindow.webContents.send("navigate", "/officer-listing");
             },
+            enabled: true,
+            label: "Listing",
           },
           {
+            enabled: true,
             click() {
               console.log("Click");
-              mainWindow.webContents.send("navigate", "/rejected-transactions");
+              mainWindow.webContents.send("navigate", "/authorizer-listing");
             },
-            enabled: false,
-            label: "Rejected Transaction",
-          },
-          {
-            enabled: false,
-            click() {
-              console.log("Click");
-              mainWindow.webContents.send("navigate", "/transaction-listing");
-            },
-            label: "Transaction Listing",
+            label: "Authorizer",
           },
         ],
+      },
+      {
+        label: "Create Transaction",
+        enabled: true,
+        click() {
+          mainWindow.webContents.send("navigate", "/txn-type");
+        }
+      },
+      {
+        label: "Rejected",
+        enabled: true,
+        click() {
+          mainWindow.webContents.send("navigate", "/rejected-transactions");
+        }
       },
       {
         label: "AMC-Client",
         enabled: false,
         click() {
-          mainWindow.webContents.send("navigate", "/comp-sign-transactions/compliance");
+          mainWindow.webContents.send("navigate", "/amc-client");
         }
       },
+
       {
         label: "Authorizer-A",
         enabled: false,

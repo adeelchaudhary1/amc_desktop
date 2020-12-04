@@ -29,6 +29,47 @@ const Outflow = () => {
   const [grossAmount, setGrossAmount] = useState('');
   const [netAmount, setNetAmount] = useState('');
   const [des, setDes] = useState('');
+  const [trx_id, setTrx_id] = useState<string>('')
+
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'outflow') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      const beneobj = {
+        'account_name': obj.name_of_beneficiary,
+        'bank_name': obj.beneficiary_bank,
+        'branch_name': obj.beneficiary_branch,
+        'account_title': obj.beneficiary_account
+      }
+      setDes(obj.description)
+      setBeneData(beneobj);
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setFilioNo(obj.folio_no)
+      setTrx_id(obj.txn_id)
+      setInstrumentNo(obj.instrument_no)
+      setGrossAmount(obj.gross_amount)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      SetMot(obj.type_of_transaction)
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
 
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
@@ -54,7 +95,9 @@ const Outflow = () => {
   const [MOPData, setMOPData] = useState<any>([]);
   const [MOTData, setMOTData] = useState<any>([]);
   const [iTypeData, setITypeData] = useState<any>([]);
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -66,6 +109,7 @@ const Outflow = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   const getUnitHolderDetialByFolioNumber = async (code: string) => {
     //get funds by amc for dropdown
@@ -185,7 +229,7 @@ const Outflow = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addOutFlowTransaction(email, fund, 'a', accNo, mot, instrumentType, beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, instrumentNo, grossAmount, des, netAmount, amcName);
+        const response = await addOutFlowTransaction(email, fund, 'a', accNo, mot, instrumentType, beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, instrumentNo, grossAmount, des, netAmount, amcName, trx_id, folioNo);
         setAmcName('');
         setFund('');
         setAccNo('');
@@ -195,10 +239,14 @@ const Outflow = () => {
         setInstrumentDate('');
         setInstrumentNo('');
         setInstrumentType('');
+        setTrx_id('');
         setGrossAmount('');
         SetMot('');
         setDes('');
         setNetAmount('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message[0]);
@@ -215,7 +263,7 @@ const Outflow = () => {
         <ToastContainer limit={1} />
         <Header />
         <div className="body-pad">
-          <h1 className="mb-1">Outflow</h1>
+          <h1 className="mb-1">{tx === 'outflow' ? 'Edit Outflow' : 'Outflow'}</h1>
           {/* <h1>Transaction</h1> */}
           <div className="form-holder">
             <div className="title-row">
@@ -223,21 +271,20 @@ const Outflow = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
-                  <p className="label">AMC Name</p>
-                  <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                  <p className="label">Account No</p>
+                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
+                  <div className="input-1" data-tip="First Select Amc">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
+                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -246,26 +293,17 @@ const Outflow = () => {
                   <p className="label">Fund Name</p>
                   <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
                   <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
                     {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Account No</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
-                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -422,10 +460,12 @@ const Outflow = () => {
               </Col>
 
             </Row>
-            <button className="btn-3" onClick={AddOutFlowTransaction} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={AddOutFlowTransaction} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'outflow' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>

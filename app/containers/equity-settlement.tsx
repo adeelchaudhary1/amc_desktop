@@ -31,8 +31,6 @@ const EquitySettlement = () => {
   const [typeOfSecurity, setTypeOfSecurity] = useState('');
   const [nav, setNav] = useState('');
   const [unitRed, setUnitRed] = useState('');
-
-
   const [tradeType, setTradeType] = useState('');
   const [brokage, setBrokage] = useState('');
   const [fed, setFed] = useState('');
@@ -44,6 +42,63 @@ const EquitySettlement = () => {
   const [brokerName, setBrokerName] = useState('');
   const [volume, setVolume] = useState('');
   const [avgRate, setAvgRate] = useState('');
+
+  const [trx_id, setTrx_id] = useState<string>('')
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'equitysettlement') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      setAmcName(obj.amc_name)
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setTrx_id(obj.txn_id)
+      setInstrumentNo(obj.instrument_no)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      setTypeOfSecurity(obj.type_of_security)
+      SetMot(obj.type_of_transaction)
+      setSettleDate(obj.settlement_date);
+      setFilioNo(obj.folio_no);
+      const beneobj = {
+        'account_name': obj.name_of_beneficiary,
+        'bank_name': obj.beneficiary_bank,
+        'branch_name': obj.beneficiary_branch,
+        'account_title': obj.beneficiary_account,
+        'balance_unit': obj.total_units
+      }
+      setBeneData(beneobj);
+      setUnitRed(obj.unit_redeemed);
+      setNav(obj.nav);
+      setTypeOfSecurity(obj.symbol);
+      setBrokage(obj.brokage);
+      setFed(obj.fed);
+      setSst(obj.sst);
+      setGrossAmount(obj.gross_amount);
+      setTradeDate(obj.trade_date)
+      setTradeType(obj.trade_type);
+      setCommission(obj.commission);
+      setBrokerCode(obj.broker_code);
+      setBrokerName(obj.broker_name);
+      setVolume(obj.volume);
+      setAvgRate(obj.avg_rate);
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
   //error getting hooks 
@@ -84,8 +139,9 @@ const EquitySettlement = () => {
   const [mot, SetMot] = useState('');
   const [motError, SetMotError] = useState('');
   const [securityTypeData, setSecurityTypeData] = useState<any>([]);
-
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -97,6 +153,7 @@ const EquitySettlement = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   const getUnitHolderDetialByFolioNumber = async (code: string) => {
     //get funds by amc for dropdown
@@ -111,7 +168,7 @@ const EquitySettlement = () => {
         beneData.length = 0;
         setBeneData(beneData)
       }
-    } catch (error) {}
+    } catch (error) { }
   }
   React.useEffect(() => {
     const fetchAmc = async () => {
@@ -264,7 +321,7 @@ const EquitySettlement = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addEquityTransaction(email, fund, accNo, beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, typeOfSecurity, instrumentNo, instrumentType, mot, tradeType, brokage, grossAmount, fed, tradeDate, sst, commission, settleDate, netAmount, brokerCode, brokerName, volume, avgRate, amcName, folioNo, nav, beneData.balance_unit, unitRed, (+beneData.balance_unit - +unitRed).toString());
+        const response = await addEquityTransaction(email, fund, accNo, beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, typeOfSecurity, instrumentNo, instrumentType, mot, tradeType, brokage, grossAmount, fed, tradeDate, sst, commission, settleDate, netAmount, brokerCode, brokerName, volume, avgRate, amcName, folioNo, nav, beneData.balance_unit, unitRed, (+beneData.balance_unit - +unitRed).toString(), trx_id);
         setAmcName('');
         setFund('');
         setAccNo('');
@@ -288,16 +345,20 @@ const EquitySettlement = () => {
         setCommission('');
         setSettleDate('');
         setBrokerCode('');
+        setTrx_id('');
         setBrokerName('');
         setVolume('');
         setAvgRate('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message);
         toast.error(error.response.data.message);
       }
       setLoading(false);
-    }else{
+    } else {
       setLoading(false);
     }
   }
@@ -307,38 +368,46 @@ const EquitySettlement = () => {
         <ToastContainer limit={1} />
         <Header />
         <div className="body-pad">
-          <h1>Equity Settlement</h1>
+          <h1>{tx === 'equitysettlement' ? 'Edit - Equity Settlement' : 'Equity Settlement'}</h1>
           <div className="form-holder">
             <Row>
-              <Col md="6">
+              {/* <Col md="6">
                 <div className="input-holder left">
                   <p className="label">AMC Name</p>
-                  <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
-                  </div>
+                  {tx === 'equitysettlement' ?
+                    <input type="text" className="input-1 " style={{ opacity: '0.6' }} value={amcName} readOnly />
+                    :
+                    <div className="input-1">
+                      <select className="input-1" defaultValue={amcName} onChange={(e) => {
+                        console.log(e.target)
+                        let value = amcdata.filter((item: any) => {
+                          return item.amc_code === e.target.value;
+                        })
+                        setAmcName(value[0].name);
+                        setAmcError('');
+                        getfundAndAccountByAmcCode(e.target.value);
+                      }}>
+                        <option value="" defaultChecked hidden> Select An AMC</option>
+                        {renderAmcDropdown()}
+                      </select>
+                      {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                    </div>}
                 </div>
-              </Col>
+              </Col> */}
               <Col md="6">
                 <div className="input-holder right">
                   <p className="label">Fund Name</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
+                  <div className="input-1">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
                     {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
                   </div>
                 </div>
@@ -348,11 +417,17 @@ const EquitySettlement = () => {
               <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Account No</p>
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
+                  <div className="input-1">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
                     {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
@@ -689,11 +764,12 @@ const EquitySettlement = () => {
               </Col>
 
             </Row>
-
-            <button className="btn-3" onClick={addEquitySettlementTransaction} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={addEquitySettlementTransaction} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'equitysettlement' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>

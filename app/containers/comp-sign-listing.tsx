@@ -22,8 +22,8 @@ const ComplianceSignatoryTransactions = (props: any) => {
       props.match.params.type.toUpperCase() === 'COMPLIANCE'
         ? 'COMPLIANCE'
         : props.match.params.type.toUpperCase() === 'SIGNATORY-A'
-        ? 'INREVIEW,SIGNATORY-A'
-        : 'INREVIEW,SIGNATORY-B',
+          ? 'INREVIEW,SIGNATORY-A'
+          : 'INREVIEW,SIGNATORY-B',
       ''
     )
       .then((response) => {
@@ -46,7 +46,7 @@ const ComplianceSignatoryTransactions = (props: any) => {
       });
   }, [props.match.params.type]);
   React.useEffect(() => {
-    searchFilters(undefined,undefined, currentPage);
+    searchFilters(undefined, undefined, currentPage);
   }, [currentPage]);
   const searchFilters = (statusVar = undefined, searchVar = undefined, pageNumber: string = '') => {
     getAllPendingTransactions(
@@ -54,9 +54,9 @@ const ComplianceSignatoryTransactions = (props: any) => {
       props.match.params.type.toUpperCase() === 'COMPLIANCE'
         ? 'COMPLIANCE'
         : props.match.params.type.toUpperCase() === 'SIGNATORY-A'
-        ? 'INREVIEW,SIGNATORY-A'
-        : 'INREVIEW,SIGNATORY-B',
-        searchVar === undefined ? searchValue : searchVar,
+          ? 'INREVIEW,SIGNATORY-A'
+          : 'INREVIEW,SIGNATORY-B',
+      searchVar === undefined ? searchValue : searchVar,
 
     )
       .then((response) => {
@@ -86,7 +86,7 @@ const ComplianceSignatoryTransactions = (props: any) => {
         <Header />
         <div className="body-pad">
           <div className="d-flex align-items-center">
-            <h1 className="ml-4">{headLabel.toUpperCase()} Transactions</h1>
+            <h1 className="ml-4">{headLabel.toUpperCase() === 'SIGNATORY-A' ? 'AUTHORIZER-A' : headLabel.toUpperCase() === 'SIGNATORY-B' ? 'AUTHORIZER-B' : 'AUTHORIZER-B'} Transactions</h1>
           </div>
           <div className="form-holder">
             <div className="input-holder">
@@ -128,8 +128,8 @@ const ComplianceSignatoryTransactions = (props: any) => {
                         ? 'COMPLIANCE'
                         : props.match.params.type.toUpperCase() ===
                           'SIGNATORY-A'
-                        ? 'INREVIEW,SIGNATORY-A'
-                        : 'INREVIEW,SIGNATORY-B';
+                          ? 'INREVIEW,SIGNATORY-A'
+                          : 'INREVIEW,SIGNATORY-B';
                     setStatus('');
                     setSearchValue('');
                     searchFilters(typeTx, '');
@@ -224,8 +224,8 @@ const ComplianceSignatoryTransactions = (props: any) => {
                   <i className="fa fa-arrow-left"></i>
                 </button>
               ) : (
-                ''
-              )}
+                  ''
+                )}
               {lastPageNum !== currentPage ? (
                 <button
                   style={{
@@ -257,8 +257,8 @@ const ComplianceSignatoryTransactions = (props: any) => {
                   <i className="fa fa-arrow-right"></i>
                 </button>
               ) : (
-                ''
-              )}
+                  ''
+                )}
             </div>
           </div>
         </div>

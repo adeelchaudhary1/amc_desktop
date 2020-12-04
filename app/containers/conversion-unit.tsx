@@ -37,6 +37,58 @@ const ConversionUnit = () => {
     const [unitPur, setUnitPur] = useState('');
     const [frontLoad, setFrontLoad] = useState('');
     const [unitRed, setUnitRed] = useState('');
+
+    const [trx_id, setTrx_id] = useState<string>('')
+    const tx = sessionStorage.getItem('rejectedTxName') || '';
+    React.useEffect(() => {
+        const txName = sessionStorage.getItem('rejectedTxName') || '';
+        const flag = sessionStorage.getItem('rejectedFlag') || false;
+        if (flag && txName === 'unitconversion') {
+            const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+            setAmcName(obj.amc_name)
+            setInstrumentDate(obj.instrument_date);
+            setInstrumentType(obj.instrument_type);
+            setTrx_id(obj.txn_id)
+            setInstrumentNo(obj.instrument_no)
+            setNetAmount(obj.net_amount)
+            setFund(obj.fund);
+            setAccNo(obj.account_no);
+            setAmcName(obj.amc_name);
+            SetMot(obj.type_of_transaction);
+            setFilioNo(obj.folio_no);
+            setNav(obj.nav);
+            const beneobj = {
+                'account_name': obj.name_of_beneficiary,
+                'bank_name': obj.beneficiary_bank,
+                'branch_name': obj.beneficiary_branch,
+                'account_title': obj.beneficiary_account
+            }
+            setZakat(obj.zakat);
+            setBeneData(beneobj);
+            setSaleDate(obj.sale_booking_date);
+            setGrossAmount(obj.gross_amount);
+            setBackLoad(obj.back_load);
+            setSaleDate(obj.sale_date);
+            setUnitPur(obj.unit_purchased);
+            setWht(obj.wht);
+            setFrontLoad(obj.frontend_load);
+            setCgt(obj.cgt);
+            setUnitRed(obj.unit_redeemed);
+            setRedDate(obj.redemption_date)
+            const fetchAmcFirst = async () => {
+                try {
+                    const amcResponse = await getAmc(email);
+                    setAmcdata(amcResponse.data.data);
+                    amcResponse.data.data.map((amc: any) => {
+                        if (amc.name === obj.amc_name) {
+                            getfundAndAccountByAmcCode(amc.amc_code)
+                        }
+                    });
+                } catch (error) { }
+            };
+            fetchAmcFirst();
+        }
+    }, [])
     // const [fileUpload, setFileUpload] = useState('');
     const email = sessionStorage.getItem('email') || '';
     //error getting hooks 
@@ -69,7 +121,9 @@ const ConversionUnit = () => {
     const [accountNoData, setAccountNoData] = useState<any>([]);
     const [MOTData, setMOTData] = useState<any>([]);
     const [iTypeData, setITypeData] = useState<any>([]);
+    const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
     const getfundAndAccountByAmcCode = async (code: string) => {
+        setAccFundLoading(true);
         allFunds.length = 0;
         setAllFunds(allFunds)
         //get funds by amc for dropdown
@@ -81,6 +135,7 @@ const ConversionUnit = () => {
             const accResponse = await getAccountByAmc(email, code);
             setAccountNoData(accResponse.data.data);
         } catch (error) { }
+        setAccFundLoading(false);
     }
     const getUnitHolderDetialByFolioNumber = async (code: string) => {
         //get funds by amc for dropdown
@@ -215,7 +270,7 @@ const ConversionUnit = () => {
         if (isValid) {
             setLoading(true);
             try {
-                const response = await addConversionUnitTransaction(email, accNo, amcName, fund, folioNo, beneData.account_name, beneData.branch_name, beneData.bank_name, beneData.account_title, instrumentType, instrumentNo, instrumentDate, mot, redDate, unitRed, nav, frontLoad, grossAmount, cgt, zakat, wht, backLoad, saleDate, unitPur, netAmount);
+                const response = await addConversionUnitTransaction(email, accNo, amcName, fund, folioNo, beneData.account_name, beneData.branch_name, beneData.bank_name, beneData.account_title, instrumentType, instrumentNo, instrumentDate, mot, redDate, unitRed, nav, frontLoad, grossAmount, cgt, zakat, wht, backLoad, saleDate, unitPur, netAmount, trx_id);
                 setAmcName('');
                 setFund('');
                 setAccNo('');
@@ -229,6 +284,7 @@ const ConversionUnit = () => {
                 setGrossAmount('');
                 setNetAmount('');
                 setZakat('');
+                setTrx_id('');
                 setCgt('');
                 setBackLoad('');
                 setWht('');
@@ -238,6 +294,9 @@ const ConversionUnit = () => {
                 setUnitPur('');
                 setFrontLoad('');
                 setUnitRed('');
+                sessionStorage.removeItem('rejectedTxObj');
+                sessionStorage.removeItem('rejectedTxName');
+                sessionStorage.removeItem('rejectedFlag');
                 toast.success(response.data.message);
             } catch (error) {
                 console.log(error.response.data.message[0]);
@@ -254,68 +313,83 @@ const ConversionUnit = () => {
                 <ToastContainer limit={1} />
                 <Header />
                 <div className="body-pad">
-                    <h1 className="mb-1">Conversion Unit</h1>
+                    <h1 className="mb-1">{tx === 'unitconversion' ? 'Edit - Conversion Unit' : 'Conversion Unit'}</h1>
                     {/* <h1>Transaction</h1> */}
                     <div className="form-holder">
                         <div className="title-row">
                         </div>
                         <Row>
-                            <Col md="6">
+                            {/* <Col md="6">
                                 <div className="input-holder left">
                                     <p className="label">AMC Name</p>
-                                    <div className="input-1">
-                                        <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                                            console.log(e.target)
-                                            let value = amcdata.filter((item: any) => {
-                                                return item.amc_code === e.target.value;
-                                            })
-                                            setAmcName(value[0].name);
-                                            setAmcError('');
-                                            getfundAndAccountByAmcCode(e.target.value);
-                                        }}>
-                                            <option value="" defaultChecked hidden> Select An AMC</option>
-                                            {renderAmcDropdown()}
-                                        </select>
-                                        {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
-                                    </div>
+                                    {tx === 'unitconversion' ?
+                                        <input type="text" className="input-1 " style={{ opacity: '0.6' }} value={amcName} readOnly />
+                                        :
+                                        <div className="input-1">
+                                            <select className="input-1" defaultValue={amcName} onChange={(e) => {
+                                                console.log(e.target)
+                                                let value = amcdata.filter((item: any) => {
+                                                    return item.amc_code === e.target.value;
+                                                })
+                                                setAmcName(value[0].name);
+                                                setAmcError('');
+                                                getfundAndAccountByAmcCode(e.target.value);
+                                            }}>
+                                                <option value="" defaultChecked hidden> Select An AMC</option>
+                                                {renderAmcDropdown()}
+                                            </select>
+                                            {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                                        </div>}
                                 </div>
-                            </Col>
-                            <Col md="6">
-                                <div className="input-holder right">
-                                    <p className="label">Fund Name</p>
-                                    <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                                    <div className="input-1" data-tip="First Select Amc">
-                                        <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                                            <option value="" defaultChecked hidden> Select Fund</option>
-                                            {renderFundsDropdown()}
-                                        </select>
-                                        {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                                    </div>
-                                </div>
-                            </Col>
-                        </Row>
-                        <Row>
+                            </Col> */}
                             <Col md="6">
                                 <div className="input-holder left">
                                     <p className="label">Account No</p>
-                                    <div className="input-1" data-tip="First Select Amc">
-                                        <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                                            <option value="" defaultChecked hidden> Select Account</option>
-                                            {renderAccountNoDropdown()}
-                                        </select>
+                                    <div className="input-1">
+                                        {accFundLoading ?
+                                            <div className="input-1">
+                                                <div className="ml-2">Account Loading</div>
+                                                <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                                            </div>
+                                            :
+                                            <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                                                <option value="" defaultChecked hidden> Select Account</option>
+                                                {renderAccountNoDropdown()}
+                                            </select>}
                                         {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                                     </div>
                                 </div>
                             </Col>
                             <Col md="6">
                                 <div className="input-holder right">
+                                    <p className="label">Fund Name</p>
+                                    <div className="input-1" >
+                                        {accFundLoading ?
+                                            <div className="input-1">
+                                                <div className="ml-2">Fund Loading</div>
+                                                <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                                            </div>
+                                            :
+                                            <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                                                <option value="" defaultChecked hidden> Select Fund</option>
+                                                {renderFundsDropdown()}
+                                            </select>}
+                                        {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
+                                    </div>
+                                </div>
+                            </Col>
+                        </Row>
+                        <Row>
+
+                            <Col md="6">
+                                <div className="input-holder left">
                                     <p className="label">Type of Transaction</p>
                                     <div className="input-1" >
                                         <select className="input-1" value={mot} onChange={(e) => { SetMotError(''); SetMot(e.target.value) }}>
                                             <option value="" defaultChecked hidden>Select</option>
                                             {renderMotDropdown()}
                                         </select>
-                                        {motError ? <p className="error-labels error-message">{motError}</p> : ''}
+                                        {motError ? <p className="error-labels error-message2">{motError}</p> : ''}
                                     </div>
                                 </div>
                             </Col>
@@ -582,10 +656,12 @@ const ConversionUnit = () => {
                                 </div>
                             </Col>
                         </Row>
-                        <button className="btn-3" onClick={AddGainRealizationTransaction} disabled={Boolean(Loading)}>
-                            {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-                        </button>
+                        <div className="hov">
+                            <button className="btn-3" onClick={AddGainRealizationTransaction} disabled={Boolean(Loading)}>
+                                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                                    <span className="login-txt"> Loading...</span></> : <p>{tx === 'unitconversion' ? 'Edit' : 'Create'}</p>}
+                            </button>
+                        </div>
                     </div>
 
                 </div>

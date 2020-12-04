@@ -8,7 +8,7 @@ import {
   Col,
   Row
 } from 'reactstrap';
-import { getAmc, updateAmcStatus } from './../stores/services/amc.service';
+import { getAmc } from './../stores/services/amc.service';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { Link } from 'react-router-dom';
@@ -90,8 +90,8 @@ const FundList = () => {
       status = 'active'
     }
     try {
-      const response = await updateAmcStatus(email, code, status)
-      toast.success(response.data.message);
+      // const response = await updateAmcStatus(email, code, status)
+      // toast.success(response.data.message);
       setStatusSetPopup(false);
       getBankListUpdated();
     } catch (error) { }
@@ -172,7 +172,7 @@ const FundList = () => {
         <Header />
         <div className="body-pad">
           <div className="d-flex align-items-center">
-            <Link to="/setup"><img src="assets/arrow-left.svg" alt="" width="24" /></Link>
+            <Link to="/amc-client"><img src="assets/arrow-left.svg" alt="" width="24" /></Link>
             <h1 className="ml-4">AMC Listing</h1>
           </div>
           {!Loading ?
@@ -190,16 +190,62 @@ const FundList = () => {
               <table className="table my-table" id="myTable" >
                 <thead>
                   <tr>
-                    <th>Name for AMC</th>
-                    <th>Concerned Officer</th>
-                    <th>Substitute Concerned Officer</th>
+                    <th>Account Name</th>
+                    <th>Client Name</th>
+                    <th>CNIC</th>
+                    <th>Type</th>
+                    <th>NTN</th>
+                    <th>Registration Date</th>
                     <th>Status</th>
-                    <th className="center">Action</th>
-                    <th>Details</th>
                   </tr>
                 </thead>
+                
                 <tbody id="myUL">
-                  {renderData()}
+                  <tr>
+                    <td>Current</td>
+                    <td>Moiz</td>
+                    <td>36602-12329760-9</td>
+                    <td>Individual</td>
+                    <td>45455</td>
+                    <td>21-Nov-2020</td>
+                    <td className="d-flex justify-content-center"
+                      onClick={() => {
+                        setStatusSetPopup(true);
+                      }}
+                    >
+                      <img src="assets/ban.svg" alt="" width="16" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Current New</td>
+                    <td>Naeem</td>
+                    <td>36602-12329760-9</td>
+                    <td>Coporate</td>
+                    <td>45455</td>
+                    <td>19-Nov-2020</td>
+                    <td className="d-flex justify-content-center"
+                      onClick={() => {
+                        setStatusSetPopup(true);
+                      }}
+                    >
+                      <img src="assets/check.svg" alt="" width="16" />
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>Current Old</td>
+                    <td>HAseeb</td>
+                    <td>36602-12329760-9</td>
+                    <td>Individual</td>
+                    <td>45H45D</td>
+                    <td>11-Nov-2020</td>
+                    <td className="d-flex justify-content-center"
+                      onClick={() => {
+                        setStatusSetPopup(true);
+                      }}
+                    >
+                      <img src="assets/ban.svg" alt="" width="16" />
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>

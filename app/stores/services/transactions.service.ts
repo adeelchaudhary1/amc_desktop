@@ -30,8 +30,8 @@ const getModeOfPayments = async (email: string) => {
  * 
  * @param email 
  */
-const getAllPendingTransactions = async (email: string, status: string, search_value : string ,  created_by: string = '', page_number: string = '' ) => {
-    const url = `${Config.baseUrl}/transaction?email=${email}&status=${status}&search_value=${search_value}&created-by=${created_by}&page_number=${page_number}&page_size=10`;
+const getAllPendingTransactions = async (email: string, status: string, search_value: string, created_by: string = '', page_number: string = '') => {
+    const url = `${Config.baseUrl}/transaction?email=${email}&status=${status}&search_value=${search_value}&created-by=${created_by}&page_number=${page_number}&page_size=1000`;
     const result: any = await axios.get(url);
     return result;
 }
@@ -64,10 +64,11 @@ const addNCCPLTransaction = async (
     instrument_type: string,
     gross_amount: string,
     net_amount: string,
-    amc_name: string) => {
+    amc_name: string,
+    trx_id: string) => {
     const url = `${Config.baseUrl}/transaction/nccpl/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, type_of_transaction, instrument_no, instrument_type, gross_amount, net_amount, amc_name });
+        { email, fund, account_no, type_of_transaction, instrument_no, instrument_type, gross_amount, net_amount, amc_name, trx_id });
     return result;
 }
 const addProfitTransaction = async (
@@ -79,10 +80,11 @@ const addProfitTransaction = async (
     instrument_type: string,
     gross_amount: string,
     net_amount: string,
-    amc_name: string) => {
+    amc_name: string,
+    trx_id: string) => {
     const url = `${Config.baseUrl}/transaction/profit/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, type_of_transaction, nature_of_transaction, instrument_type, gross_amount, net_amount, amc_name });
+        { email, fund, account_no, type_of_transaction, nature_of_transaction, instrument_type, gross_amount, net_amount, amc_name, trx_id });
     return result;
 }
 
@@ -105,10 +107,13 @@ const addCashDividientTransaction = async (
     // file: string,
     beneficiary_bank: string,
     beneficiary_branch: string,
-    beneficiary_account: string) => {
+    beneficiary_account: string,
+    trx_id: string,
+    folio_no: string,
+) => {
     const url = `${Config.baseUrl}/transaction/cash-dividend/`;
     const result: any = await axios.post(url,
-        { email, amc_name, fund, account_no, mode_of_payment, name_of_beneficiary, instrument_date, instrument_no, instrument_type, gross_amount, type_of_transaction, beneficiary, wht, zakat, net_amount, beneficiary_bank, beneficiary_branch, beneficiary_account });
+        { email, amc_name, fund, account_no, mode_of_payment, name_of_beneficiary, instrument_date, instrument_no, instrument_type, gross_amount, type_of_transaction, beneficiary, wht, zakat, net_amount, beneficiary_bank, beneficiary_branch, beneficiary_account, trx_id, folio_no });
     return result;
 }
 
@@ -137,11 +142,12 @@ const addRedemptionTransaction = async (
     back_load: string,
     zakat: string,
     net_amount: string,
+    trx_id: string
     // file: string, 
 ) => {
     const url = `${Config.baseUrl}/transaction/redemption-bank/`;
     const result: any = await axios.post(url,
-        { email, amc_name, fund, account_no, date_of_redemption, mode_of_payment, folio_no, nav, total_unit, unit_redeemed, remain_unit, name_of_beneificiary, beneificiary_bank, beneificiary_branch, beneificiary_account_title, instrument_date, instrument_no, instrument_type, gross_amount, cgt, beneificiary_name, back_load, zakat, net_amount });
+        { email, amc_name, fund, account_no, date_of_redemption, mode_of_payment, folio_no, nav, total_unit, unit_redeemed, remain_unit, name_of_beneificiary, beneificiary_bank, beneificiary_branch, beneificiary_account_title, instrument_date, instrument_no, instrument_type, gross_amount, cgt, beneificiary_name, back_load, zakat, net_amount, trx_id });
     return result;
 }
 
@@ -161,10 +167,13 @@ const addInFlowTransaction = async (
     gross_amount: string,
     description: string,
     net_amount: string,
-    amc_name: string) => {
+    amc_name: string,
+    trx_id: string,
+    folio_no: string,
+) => {
     const url = `${Config.baseUrl}/transaction/inflow/`;
     const result: any = await axios.post(url,
-        { email, fund, txnr, account_no, type_of_transaction, instrument_type, name_of_beneficiary, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, instrument_no, gross_amount, description, net_amount, amc_name });
+        { email, fund, txnr, account_no, type_of_transaction, instrument_type, name_of_beneficiary, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, instrument_no, gross_amount, description, net_amount, amc_name, trx_id, folio_no });
     return result;
 }
 
@@ -185,10 +194,13 @@ const addOutFlowTransaction = async (
     gross_amount: string,
     description: string,
     net_amount: string,
-    amc_name: string) => {
+    amc_name: string,
+    trx_id: string,
+    folio_no: string,
+) => {
     const url = `${Config.baseUrl}/transaction/outflow/`;
     const result: any = await axios.post(url,
-        { email, fund, txnr, account_no, type_of_transaction, instrument_type, name_of_beneficiary, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, instrument_no, gross_amount, description, net_amount, amc_name });
+        { email, fund, txnr, account_no, type_of_transaction, instrument_type, name_of_beneficiary, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, instrument_no, gross_amount, description, net_amount, amc_name, trx_id, folio_no });
     return result;
 }
 
@@ -214,11 +226,12 @@ const addMoneyMerketTransaction = async (
     issue_date: string,
     face_value: string,
     price: string,
-    settelment_amount: string
+    settelment_amount: string,
+    trx_id: string
 ) => {
     const url = `${Config.baseUrl}/transaction/money-market-settlement/`;
     const result: any = await axios.post(url,
-        { email, amc_name, account_no, fund, type_of_transaction, counter_party_name, broker, instrument_date, instrument_type, counter_party_bank, counter_party_sgl_ips, instrument_no, type_of_secuirty, maturity_date, coupon, settelment_date, net_amount, issue_date, face_value, price, settelment_amount });
+        { email, amc_name, account_no, fund, type_of_transaction, counter_party_name, broker, instrument_date, instrument_type, counter_party_bank, counter_party_sgl_ips, instrument_no, type_of_secuirty, maturity_date, coupon, settelment_date, net_amount, issue_date, face_value, price, settelment_amount, trx_id });
     return result;
 }
 
@@ -248,11 +261,12 @@ const addGainRealizationTransaction = async (
     backend_load: string,
     sale_date: string,
     unit_purchased: string,
-    net_amount: string
+    net_amount: string,
+    trx_id: string
 ) => {
     const url = `${Config.baseUrl}/transaction/gain-realization/`;
     const result: any = await axios.post(url,
-        { email, account_no, amc_name, fund, folio_no, beneficiary_name, beneficiary_branch, beneficiary_bank, beneficiary_account_no, instrument_type, instrument_no, instrument_date, transaction_type, redemtion_date, unit_redeemed, nav, frontend_load, gross_amount, cgt, zakat, wht, backend_load, sale_date, unit_purchased, net_amount });
+        { email, account_no, amc_name, fund, folio_no, beneficiary_name, beneficiary_branch, beneficiary_bank, beneficiary_account_no, instrument_type, instrument_no, instrument_date, transaction_type, redemtion_date, unit_redeemed, nav, frontend_load, gross_amount, cgt, zakat, wht, backend_load, sale_date, unit_purchased, net_amount, trx_id });
     return result;
 }
 
@@ -282,11 +296,12 @@ const addConversionUnitTransaction = async (
     backend_load: string,
     sale_date: string,
     unit_purchased: string,
-    net_amount: string
+    net_amount: string,
+    trx_id: string
 ) => {
     const url = `${Config.baseUrl}/transaction/unit-conversion/`;
     const result: any = await axios.post(url,
-        { email, account_no, amc_name, fund, folio_no, beneficiary_name, beneficiary_branch, beneficiary_bank, beneficiary_account_no, instrument_type, instrument_no, instrument_date, transaction_type, redemtion_date, unit_redeemed, nav, frontend_load, gross_amount, cgt, zakat, wht, backend_load, sale_date, unit_purchased, net_amount });
+        { email, account_no, amc_name, fund, folio_no, beneficiary_name, beneficiary_branch, beneficiary_bank, beneficiary_account_no, instrument_type, instrument_no, instrument_date, transaction_type, redemtion_date, unit_redeemed, nav, frontend_load, gross_amount, cgt, zakat, wht, backend_load, sale_date, unit_purchased, net_amount, trx_id });
     return result;
 }
 
@@ -302,10 +317,13 @@ const addCgtTransaction = async (
     instrument_type: string,
     gross_amount: string,
     net_amount: string,
-    amc_name: string) => {
+    amc_name: string,
+    trx_id: string,
+    folio_no: string,
+) => {
     const url = `${Config.baseUrl}/transaction/cgt/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, beneficiary_name, transaction_type, instrument_date, instrument_no, instrument_type, gross_amount, net_amount, amc_name });
+        { email, fund, account_no, beneficiary_name, transaction_type, instrument_date, instrument_no, instrument_type, gross_amount, net_amount, amc_name, trx_id, folio_no });
     return result;
 }
 
@@ -329,10 +347,11 @@ const addSaleUnitTransaction = async (
     sale_lead: string,
     gross_amount: string,
     net_amount: string,
+    trx_id: string
 ) => {
     const url = `${Config.baseUrl}/transaction/sale-unit/`;
     const result: any = await axios.post(url,
-        { email, amc_name, fund, account_no, transaction_type, folio_no, nav, instrument_date, instrument_no, instrument_type, cheque_realised_date, sale_booking_date, total_unit, unit_issued, sale_lead, gross_amount, net_amount });
+        { email, amc_name, fund, account_no, transaction_type, folio_no, nav, instrument_date, instrument_no, instrument_type, cheque_realised_date, sale_booking_date, total_unit, unit_issued, sale_lead, gross_amount, net_amount, trx_id });
     return result;
 }
 
@@ -353,10 +372,13 @@ const addFeePaymentTransaction = async (
     sst13: string,
     net_amount: string,
     sst20: string,
+    trx_id: string,
+    folio_no: string,
+
 ) => {
     const url = `${Config.baseUrl}/transaction/fee-payment/`;
     const result: any = await axios.post(url,
-        { email, amc_name, fund, account_no, type_of_transaction, name_of_beneficiary, instrument_date, instrument_no, instrument_type, gross_amount, nature_of_transaction, wht12, sst13, net_amount, sst20 });
+        { email, amc_name, fund, account_no, type_of_transaction, name_of_beneficiary, instrument_date, instrument_no, instrument_type, gross_amount, nature_of_transaction, wht12, sst13, net_amount, sst20, trx_id, folio_no });
     return result;
 }
 // refund payment
@@ -371,10 +393,13 @@ const addRefundPaymentTransaction = async (
     instrument_type: string,
     gross_amount: string,
     net_amount: string,
-    amc_name: string) => {
+    amc_name: string,
+    trx_id: string,
+    folio_no: string,
+) => {
     const url = `${Config.baseUrl}/transaction/refund-payment/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, name_of_beneficiary, instrument_no, transaction_type, instrument_date, instrument_type, gross_amount, net_amount, amc_name });
+        { email, fund, account_no, name_of_beneficiary, instrument_no, transaction_type, instrument_date, instrument_type, gross_amount, net_amount, amc_name, trx_id, folio_no });
     return result;
 }
 // add brokerage Fee
@@ -391,11 +416,13 @@ const addBrokerageTransaction = async (
     sst20: string,
     wht12: string,
     net_amount: string,
-    amc_name: string
+    amc_name: string,
+    trx_id: string,
+    folio_no: string,
 ) => {
     const url = `${Config.baseUrl}/transaction/brokage-fee/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, name_of_beneficiary, instrument_date, instrument_no, instrument_type, gross_amount, sst13, sst20, wht12, net_amount, amc_name });
+        { email, fund, account_no, name_of_beneficiary, instrument_date, instrument_no, instrument_type, gross_amount, sst13, sst20, wht12, net_amount, amc_name, trx_id, folio_no });
     return result;
 }
 
@@ -431,11 +458,12 @@ const addEquityTransaction = async (
     nav: string,
     total_units: string,
     unit_redeemed: string,
-    remain_units: string
+    remain_units: string,
+    trx_id: string
 ) => {
     const url = `${Config.baseUrl}/transaction/equity-settlement/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, name_of_beneficiary, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, symbol, instrument_no, instrument_type, type_of_transaction, trade_type, brokage, gross_amount, fed, trade_date, sst, commission, settlement_date, net_amount, broker_code, broker_name, volume, avg_rate, amc_name, folio_no, nav, total_units, unit_redeemed, remain_units });
+        { email, fund, account_no, name_of_beneficiary, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, symbol, instrument_no, instrument_type, type_of_transaction, trade_type, brokage, gross_amount, fed, trade_date, sst, commission, settlement_date, net_amount, broker_code, broker_name, volume, avg_rate, amc_name, folio_no, nav, total_units, unit_redeemed, remain_units, trx_id });
     return result;
 }
 
@@ -463,14 +491,43 @@ const addMaturityTransaction = async (
     gross_amount: string,
     wht: string,
     net_amount: string,
-    amc_name: string
+    amc_name: string,
+    trx_id: string,
+    folio_no: string,
 ) => {
     const url = `${Config.baseUrl}/transaction/maturity/`;
     const result: any = await axios.post(url,
-        { email, fund, account_no, beneficiary_name, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, instrument_no, instrument_type, type_of_transaction, transaction_nature, security_type, issue_date, maturity_date, coupon_maturity_date, coupon, price, face_value, gross_amount, wht, net_amount, amc_name });
+        { email, fund, account_no, beneficiary_name, beneficiary_bank, beneficiary_branch, beneficiary_account, instrument_date, instrument_no, instrument_type, type_of_transaction, transaction_nature, security_type, issue_date, maturity_date, coupon_maturity_date, coupon, price, face_value, gross_amount, wht, net_amount, amc_name, trx_id, folio_no });
     return result;
 }
 
+//add fund transfer treansaction 
+const addFundTransferTransaction = async (
+    email: string,
+    fund: string,
+    account_no: string,
+    mode_of_transaction: string,
+    instrument_no: string,
+    instrument_type: string,
+    sender_bank_name: string,
+    sender_branch: string,
+    sender_account_no: string,
+    receiver_bank_name: string,
+    receiver_branch: string,
+    receiver_account_no: string,
+    net_amount: string,
+    amc_name: string,
+    trx_id: string) => {
+    const url = `${Config.baseUrl}/transaction/maturity/`;
+    const result: any = await axios.post(url,
+        { email, fund, account_no, mode_of_transaction, instrument_no, instrument_type, sender_bank_name, sender_branch, sender_account_no, receiver_bank_name, receiver_branch, receiver_account_no, net_amount, amc_name, trx_id });
+    return result;
+}
+//display type 
+const getCaptype = async () => {
+    const url = `${Config.baseUrl}/transaction/txntypes`;
+    const result: any = await axios.get(url);
+    return result;
+};
 
-
-export { updateTransactionStatus , getNatureOfTx, addMaturityTransaction, addEquityTransaction, addBrokerageTransaction, addRefundPaymentTransaction, addFeePaymentTransaction, addSaleUnitTransaction, addCgtTransaction, addConversionUnitTransaction, addGainRealizationTransaction, addMoneyMerketTransaction, addOutFlowTransaction, addInFlowTransaction, addRedemptionTransaction, addNCCPLTransaction, getModeOfTx, getModeOfPayments, addProfitTransaction, addCashDividientTransaction, getAllPendingTransactions };
+export { getCaptype, addFundTransferTransaction, updateTransactionStatus, getNatureOfTx, addMaturityTransaction, addEquityTransaction, addBrokerageTransaction, addRefundPaymentTransaction, addFeePaymentTransaction, addSaleUnitTransaction, addCgtTransaction, addConversionUnitTransaction, addGainRealizationTransaction, addMoneyMerketTransaction, addOutFlowTransaction, addInFlowTransaction, addRedemptionTransaction, addNCCPLTransaction, getModeOfTx, getModeOfPayments, addProfitTransaction, addCashDividientTransaction, getAllPendingTransactions };

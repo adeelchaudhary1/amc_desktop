@@ -35,6 +35,54 @@ const Redemption = () => {
   const [unitRed, setUnitRed] = useState('');
   const [cgt, setCgt] = useState('');
   const [backLoad, setBackLoad] = useState('');
+
+  const [trx_id, setTrx_id] = useState<string>('')
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'redemptionbank') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      const beneobj = {
+        'account_name': obj.name_of_beneficiary,
+        'bank_name': obj.beneficiary_bank,
+        'branch_name': obj.beneficiary_branch,
+        'account_title': obj.beneficiary_account,
+        'balance_unit': obj.total_units
+      }
+      setCgt(obj.cgt);
+      setBackLoad(obj.back_load)
+      setUnitRed(obj.units_redeemed)
+      setRedDate(obj.date_of_redemption)
+      setNav(obj.nav);
+
+      setZakat(obj.zakat);
+      setBeneData(beneobj);
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setFilioNo('123XYZ');
+      SetMop(obj.mode_of_payment)
+      setTrx_id(obj.txn_id)
+      setInstrumentNo(obj.instrument_no)
+      setGrossAmount(obj.gross_amount)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
   //error getting hooks 
@@ -64,7 +112,9 @@ const Redemption = () => {
   const [accountNoData, setAccountNoData] = useState<any>([]);
   const [MOPData, setMOPData] = useState<any>([]);
   const [iTypeData, setITypeData] = useState<any>([]);
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -76,6 +126,7 @@ const Redemption = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   const getUnitHolderDetialByFolioNumber = async (code: string) => {
     //get funds by amc for dropdown
@@ -90,7 +141,7 @@ const Redemption = () => {
         beneData.length = 0;
         setBeneData(beneData)
       }
-    } catch (error) {}
+    } catch (error) { }
   }
   React.useEffect(() => {
     const fetchAmc = async () => {
@@ -209,7 +260,7 @@ const Redemption = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addRedemptionTransaction(email, amcName, fund, accNo, redDate, mop, folioNo, nav, beneData.balance_unit, unitRed, (+beneData.balance_unit - +unitRed).toString(), beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, instrumentNo, instrumentType, grossAmount, cgt, beneData.account_name, backLoad, zakat, netAmount);
+        const response = await addRedemptionTransaction(email, amcName, fund, accNo, redDate, mop, folioNo, nav, beneData.balance_unit, unitRed, (+beneData.balance_unit - +unitRed).toString(), beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, instrumentNo, instrumentType, grossAmount, cgt, beneData.account_name, backLoad, zakat, netAmount, trx_id);
         setAmcName('');
         setFund('');
         setAccNo('');
@@ -222,19 +273,23 @@ const Redemption = () => {
         setFilioNo('');
         let array = {};
         setBeneData(array)
+        setTrx_id('');
         setInstrumentDate('');
         setInstrumentNo('');
         setInstrumentType('');
         setGrossAmount('');
         setZakat('');
         setNetAmount('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message[0]);
         toast.error(error.response.data.message[0]);
       }
       setLoading(false);
-    }else{
+    } else {
       setLoading(false);
     }
   }
@@ -244,66 +299,42 @@ const Redemption = () => {
         <ToastContainer limit={1} />
         <Header />
         <div className="body-pad">
-          <h1>Redemption</h1>
+          <h1>{tx === 'redemptionbank' ? 'Edit Redemption' : 'Redemption'}</h1>
           <div className="form-holder">
             <Row>
               <Col md="6">
                 <div className="input-holder left">
-                  <p className="label">AMC Name</p>
-                  <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Fund Name</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
-                    {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
-                <div className="input-holder left">
                   <p className="label">Account No</p>
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
+                  <div className="input-1">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
                     {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
               <Col md="6">
                 <div className="input-holder right">
-                  <p className="label">Date of Redemption</p>
+                  <p className="label">Fund Name</p>
                   <div className="input-1">
-                    <input type="date" className="input-1" value={redDate} onChange={(e) => {
-                      setRedDate(e.target.value);
-                      setRedDateError('');
-                    }}
-                    />
-                    {redDateError ? <p className="error-labels error-message">{redDateError}</p> : ''}
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
+                    {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -318,6 +349,19 @@ const Redemption = () => {
                       {renderModeOfPayments()}
                     </select>
                     {mopError ? <p className="error-labels error-message2">{mopError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+              <Col md="6">
+                <div className="input-holder right">
+                  <p className="label">Date of Redemption</p>
+                  <div className="input-1">
+                    <input type="date" className="input-1" value={redDate} onChange={(e) => {
+                      setRedDate(e.target.value);
+                      setRedDateError('');
+                    }}
+                    />
+                    {redDateError ? <p className="error-labels error-message">{redDateError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -553,10 +597,12 @@ const Redemption = () => {
                 </div>
               </Col>
             </Row>
-            <button className="btn-3" onClick={addRedemption} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={addRedemption} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'redemptionbank' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>

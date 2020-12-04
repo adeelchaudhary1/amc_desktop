@@ -7,6 +7,7 @@ import { getModeOfTx } from './../stores/services/transactions.service';
 import { addMoneyMerketTransaction } from './../stores/services/transactions.service';
 import { getAccountByAmc } from './../stores/services/account.service';
 import { getAllSecurities } from './../stores/services/security.service';
+import ReactTooltip from 'react-tooltip';
 import {
   Container,
   Row,
@@ -36,7 +37,50 @@ const MoneyMarket = () => {
   const [settleDate, setSettleDate] = useState('');
   const [settleAmount, setSettleAmount] = useState('');
   const [netAmount, setNetAmount] = useState('');
+  const [trx_id, setTrx_id] = useState<string>('')
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'moneymarketsettlement') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      setAmcName(obj.amc_name)
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setTrx_id(obj.txn_id)
+      setInstrumentNo(obj.instrument_no)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      setTypeOfSecurity(obj.type_of_security)
+      SetMot(obj.type_of_transaction)
 
+      setCPartySgl(obj.counter_party_sglacc);
+      setCPartyName(obj.counter_party_name);
+      setCPartyBank(obj.counter_party_bank);
+      setBroker(obj.broker);
+      setIssDate(obj.issue_date);
+      setMataDate(obj.maturity_date);
+      setfaceValue(obj.face_value);
+      setCoupon(obj.coupon);
+      setPrice(obj.price);
+      setSettleDate(obj.settlement_date);
+      setSettleAmount(obj.settlement_amount)
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
   //error getting hooks 
@@ -69,7 +113,9 @@ const MoneyMarket = () => {
   const [MOTData, setMOTData] = useState<any>([]);
   const [iTypeData, setITypeData] = useState<any>([]);
   const [securityTypeData, setSecurityTypeData] = useState<any>([]);
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -81,6 +127,7 @@ const MoneyMarket = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   React.useEffect(() => {
     const fetchAmc = async () => {
@@ -212,7 +259,7 @@ const MoneyMarket = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addMoneyMerketTransaction(email, amcName, accNo, fund, mot, cPartyName, broker, instrumentDate, instrumentType, cPartyBank, cPartySgl, instrumentNo, typeOfSecurity, matDate, coupon, settleDate, netAmount, issDate, faceValue, price, settleAmount);
+        const response = await addMoneyMerketTransaction(email, amcName, accNo, fund, mot, cPartyName, broker, instrumentDate, instrumentType, cPartyBank, cPartySgl, instrumentNo, typeOfSecurity, matDate, coupon, settleDate, netAmount, issDate, faceValue, price, settleAmount, trx_id);
         setAmcName('');
         setFund('');
         setAccNo('');
@@ -228,11 +275,15 @@ const MoneyMarket = () => {
         setIssDate('');
         setMataDate('');
         setfaceValue('');
+        setTrx_id('');
         setCoupon('');
         setPrice('');
         setSettleDate('');
         setSettleAmount('')
         setNetAmount('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message[0]);
@@ -249,7 +300,7 @@ const MoneyMarket = () => {
         <ToastContainer limit={1} />
         <Header />
         <div className="body-pad">
-          <h1 className="mb-1">Money Market</h1>
+          <h1 className="mb-1">{tx === 'moneymarketsettlement' ? 'Edit Money Market' : 'Money Market'}</h1>
           {/* <h1>Transaction</h1> */}
           <div className="form-holder">
             <div className="title-row">
@@ -257,21 +308,19 @@ const MoneyMarket = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
-                  <p className="label">AMC Name</p>
-                  <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                  <p className="label">Account No</p>
+                  <div className="input-1" >
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
+                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -279,25 +328,17 @@ const MoneyMarket = () => {
                 <div className="input-holder right">
                   <p className="label">Fund Name</p>
                   <div className="input-1">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
                     {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Account No</p>
-                  <div className="input-1">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
-                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -527,10 +568,12 @@ const MoneyMarket = () => {
                 </div>
               </Col>
             </Row>
-            <button className="btn-3" onClick={AddMoneyMarketTransaction} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={AddMoneyMarketTransaction} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'moneymarketsettlement' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>

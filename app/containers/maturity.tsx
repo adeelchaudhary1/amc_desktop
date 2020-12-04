@@ -37,6 +37,56 @@ const Maturity = () => {
   const [price, setPrice] = useState('');
   const [natureTx, setNatureTx] = useState('');
   const [couponDate, setCoupondate] = useState('');
+  const [trx_id, setTrx_id] = useState<string>('')
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'maturity') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      const beneobj = {
+        'account_name': obj.name_of_beneficiary,
+        'bank_name': obj.beneficiary_bank,
+        'branch_name': obj.beneficiary_branch,
+        'account_title': obj.beneficiary_account
+      }
+      setBeneData(beneobj);
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setWht(obj.wht);
+      setNatureTx(obj.nature_of_transaction);
+      setFilioNo(obj.folio_no)
+      setMataDate(obj.maturity_date)
+      setTrx_id(obj.txn_id)
+      setCoupon(obj.coupon)
+      setCoupondate(obj.coupon_maturity_date)
+      setIssDate(obj.issue_date)
+      setTypeOfSecurity(obj.type_of_security)
+      setInstrumentNo(obj.instrument_no)
+      setGrossAmount(obj.gross_amount)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setPrice(obj.price);
+      setfaceValue(obj.face_value)
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      SetMot(obj.type_of_transaction);
+      getUnitHolderDetialByFolioNumber(obj.folio_no)
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
+
   //render dropdown for nature of transaction data
   const renderNatureOfTxDropdown = () => {
     return allTxData.map((item: any, index: string) => {
@@ -79,7 +129,9 @@ const Maturity = () => {
   const [mot, SetMot] = useState('');
   const [motError, SetMotError] = useState('');
   const [securityTypeData, setSecurityTypeData] = useState<any>([]);
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -91,6 +143,7 @@ const Maturity = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   const getUnitHolderDetialByFolioNumber = async (code: string) => {
     //get funds by amc for dropdown
@@ -231,6 +284,7 @@ const Maturity = () => {
       SetMotError(motErr);
       setWhtError(whtErr);
       setNatureTxError(natureErr);
+      setTrx_id('');
       setTypeOfSecurityError(typeOfSecurityErr)
       setIssDateError(issDateErr)
       setMataDateError(matDateErr)
@@ -250,7 +304,7 @@ const Maturity = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addMaturityTransaction(email, fund, accNo, beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, instrumentNo, instrumentType, mot, natureTx, typeOfSecurity, issDate, matDate, couponDate, coupon, price, faceValue, grossAmount, wht, netAmount, amcName);
+        const response = await addMaturityTransaction(email, fund, accNo, beneData.account_name, beneData.bank_name, beneData.branch_name, beneData.account_title, instrumentDate, instrumentNo, instrumentType, mot, natureTx, typeOfSecurity, issDate, matDate, couponDate, coupon, price, faceValue, grossAmount, wht, netAmount, amcName, trx_id, folioNo);
         setAmcName('');
         setFund('');
         setAccNo('');
@@ -272,6 +326,9 @@ const Maturity = () => {
         setNetAmount('');
         setGrossAmount('');
         setWht('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message[0]);
@@ -288,7 +345,7 @@ const Maturity = () => {
         <ToastContainer limit={1} />
         <Header />
         <div className="body-pad">
-          <h1 className="mb-1">Maturity - Transaction</h1>
+          <h1 className="mb-1">{tx === 'maturity' ? 'Edit - Maturity - Transaction' : 'Maturity - Transaction'}</h1>
           {/* <h1>Maturity Transaction</h1> */}
           <div className="form-holder">
             <div className="title-row">
@@ -296,48 +353,37 @@ const Maturity = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
-                  <p className="label">AMC Name</p>
+                  <p className="label">Account No</p>
                   <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
+                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
               <Col md="6">
                 <div className="input-holder right">
                   <p className="label">Fund Name</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
+                  <div className="input-1">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
                     {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Account No</p>
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
-                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -593,10 +639,12 @@ const Maturity = () => {
                 </div>
               </Col>
             </Row>
-            <button className="btn-3" onClick={AddMaturityTx} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={AddMaturityTx} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'maturity' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>

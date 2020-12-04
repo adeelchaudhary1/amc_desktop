@@ -1,41 +1,49 @@
 import React from 'react';
 import Header from './Header';
-import { 
+import {
   Container,
   Row,
   Col,
-} from 'reactstrap'; 
+} from 'reactstrap';
 import { useHistory } from 'react-router-dom';
 
 const TXNType = () => {
   const history = useHistory();
-  return(
+  const clearTransactiionHistory = () => {
+    sessionStorage.removeItem('rejectedTxObj');
+    sessionStorage.removeItem('rejectedTxName');
+    sessionStorage.removeItem('rejectedFlag');
+  }
+  return (
     <>
       <Container fluid>
-        <Header/>
+        <Header />
         <div className="body-pad">
-          <h1>Transactions</h1>
+          <h1>Master Transactions</h1>
           <div className="form-holder">
             <div className="title-row">
-              <h3 className="mb-1">Transaction Types</h3>      
+              <h3 className="mb-1">Transaction Types</h3>
             </div>
             <p className="t-3 mb-2 text-center">Select Transaction Type</p>
-            <Row  className="mt-4">
-            <Col md="3" onClick={() => {
-                history.replace('/con-unit')
+            <Row className="mt-4">
+              {/* <Col md="3" onClick={() => {
+                clearTransactiionHistory();
+                history.replace('/feepayment')
               }}>
                 <div className="txn-box">
-                  Conversion of Units
+                  Fee Payment
                 </div>
-              </Col>
+              </Col> */}
               <Col md="3" onClick={() => {
-                history.replace('/cash-dividend')
+                clearTransactiionHistory();
+                history.replace('/cashdividend')
               }}>
                 <div className="txn-box">
                   Cash Dividend
                 </div>
               </Col>
               <Col md="3" onClick={() => {
+                clearTransactiionHistory();
                 history.replace('/maturity')
               }}>
                 <div className="txn-box">
@@ -43,15 +51,25 @@ const TXNType = () => {
                 </div>
               </Col>
               <Col md="3" onClick={() => {
-                history.replace('/refund-payment')
+                clearTransactiionHistory();
+                history.replace('/refundpayment')
               }}>
                 <div className="txn-box">
                   Refund Payment
                 </div>
               </Col>
-            </Row> 
-            <Row  className="mt-4">
-              <Col md="3"  onClick={() => {
+              <Col md="3" onClick={() => {
+                clearTransactiionHistory();
+                history.replace('/equitysettlement')
+              }}>
+                <div className="txn-box">
+                  Equity Settlement
+                </div>
+              </Col>
+            </Row>
+            <Row className="mt-4">
+              <Col md="3" onClick={() => {
+                clearTransactiionHistory();
                 history.replace('/inflow')
               }}>
                 <div className="txn-box">
@@ -59,37 +77,50 @@ const TXNType = () => {
                 </div>
               </Col>
               <Col md="3" onClick={() => {
-                history.replace('/redemption')
+                clearTransactiionHistory();
+                history.replace('/redemptionbank')
               }}>
                 <div className="txn-box">
-                  Redemption Bank 
+                  Redemption Bank
+                </div>
+              </Col>
+              {/* <Col md="3" onClick={() => {
+                clearTransactiionHistory();
+                history.replace('/brokagefee')
+              }}>
+                <div className="txn-box">
+                  Brokerage Fee
+                </div>
+              </Col> */}
+              <Col md="3" onClick={() => {
+                clearTransactiionHistory();
+                history.replace('/nccpl')
+              }}>
+                <div className="txn-box">
+                  NCCPL Transactions
                 </div>
               </Col>
               <Col md="3" onClick={() => {
-                history.replace('/gain-realization')
+                clearTransactiionHistory();
+                history.replace('/unitconversion')
               }}>
                 <div className="txn-box">
-                  Gain Realization
+                  Conversion of Units
                 </div>
               </Col>
+            </Row>
+            
+            <Row className="mt-4">
               <Col md="3" onClick={() => {
-                history.replace('/sale-of-unit')
-              }}>
-                <div className="txn-box">
-                   Sale of Unit
-                </div>
-              </Col>
-            </Row> 
-          
-            <Row  className="mt-4"> 
-              <Col md="3" onClick={() => {
-                history.replace('/money-market')
+                clearTransactiionHistory();
+                history.replace('/moneymarketsettlement')
               }}>
                 <div className="txn-box">
                   Money Market Settlement
                 </div>
               </Col>
               <Col md="3" onClick={() => {
+                clearTransactiionHistory();
                 history.replace('/outflow')
               }}>
                 <div className="txn-box">
@@ -97,34 +128,51 @@ const TXNType = () => {
                 </div>
               </Col>
               <Col md="3" onClick={() => {
-                history.replace('/bank-charges')
+                clearTransactiionHistory();
+                history.replace('/profit')
               }}>
                 <div className="txn-box">
                   Bank Charges / Profit
                 </div>
               </Col>
               <Col md="3" onClick={() => {
-                history.replace('/equity-settlement')
+                clearTransactiionHistory();
+                history.replace('/fundtransfer')
               }}>
                 <div className="txn-box">
-                  Equity Settlement
+                  Fund Transfer
                 </div>
               </Col>
-            </Row> 
-            <Row  className="mt-4"> 
+            </Row>
+            <Row className="mt-4">
               <Col md="3" onClick={() => {
-                history.replace('/cgt-tax')
+                clearTransactiionHistory();
+                history.replace('/cgt')
               }}>
                 <div className="txn-box">
                   CGT/WHT/SST
                 </div>
               </Col>
+              <Col md="3" onClick={() => {
+                clearTransactiionHistory();
+                history.replace('/saleofunit')
+              }}>
+                <div className="txn-box">
+                  Sale of Unit
+                </div>
+              </Col>
+              <Col md="3" onClick={() => {
+                clearTransactiionHistory();
+                history.replace('/gainrealization')
+              }}>
+                <div className="txn-box">
+                  Gain Realization
+                </div>
+              </Col>
 
-
-
-            </Row> 
+            </Row>
           </div>
-          
+
         </div>
       </Container>
     </>

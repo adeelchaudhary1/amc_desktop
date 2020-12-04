@@ -28,6 +28,43 @@ const RefundPayment = () => {
   const [instrumentDate, setInstrumentDate] = useState('');
   const [grossAmount, setGrossAmount] = useState('');
   const [netAmount, setNetAmount] = useState('');
+  const [trx_id, setTrx_id] = useState<string>('')
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'refundpayment') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      const beneobj = {
+        'account_name': obj.name_of_beneficiary,
+      }
+      setBeneData(beneobj);
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setFilioNo(obj.folio_no)
+      getUnitHolderDetialByFolioNumber(obj.folio_no)
+      setTrx_id(obj.txn_id)
+      setInstrumentNo(obj.instrument_no)
+      setGrossAmount(obj.gross_amount)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      SetMot(obj.type_of_transaction)
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
 
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
@@ -52,7 +89,9 @@ const RefundPayment = () => {
   const [MOPData, setMOPData] = useState<any>([]);
   const [MOTData, setMOTData] = useState<any>([]);
   const [iTypeData, setITypeData] = useState<any>([]);
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -64,6 +103,7 @@ const RefundPayment = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   const getUnitHolderDetialByFolioNumber = async (code: string) => {
     //get funds by amc for dropdown
@@ -78,7 +118,7 @@ const RefundPayment = () => {
         beneData.length = 0;
         setBeneData(beneData)
       }
-    } catch (error) {}
+    } catch (error) { }
   }
   React.useEffect(() => {
     const fetchAmc = async () => {
@@ -181,11 +221,12 @@ const RefundPayment = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addRefundPaymentTransaction(email, fund, accNo, beneData.account_name, instrumentNo, mot, instrumentDate, instrumentType, grossAmount, netAmount, amcName);
+        const response = await addRefundPaymentTransaction(email, fund, accNo, beneData.account_name, instrumentNo, mot, instrumentDate, instrumentType, grossAmount, netAmount, amcName, trx_id, folioNo);
         setAmcName('');
         setFund('');
         setAccNo('');
         setFilioNo('');
+        setTrx_id('');
         let array = {};
         setBeneData(array)
         setInstrumentDate('');
@@ -194,13 +235,16 @@ const RefundPayment = () => {
         setGrossAmount('');
         SetMot('');
         setNetAmount('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message);
         toast.error(error.response.data.message);
       }
       setLoading(false);
-    }else{
+    } else {
       setLoading(false);
     }
   }
@@ -218,48 +262,37 @@ const RefundPayment = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
-                  <p className="label">AMC Name</p>
+                  <p className="label">Account No</p>
                   <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
+                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
               <Col md="6">
                 <div className="input-holder right">
                   <p className="label">Fund Name</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <div className="input-1 " data-tip="First Select Amc">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
+                  <div className="input-1" >
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
                     {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Account No</p>
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
-                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -384,10 +417,12 @@ const RefundPayment = () => {
               </Col>
 
             </Row>
-            <button className="btn-3" onClick={AddInFlowTransaction} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={AddInFlowTransaction} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'refundpayment' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>

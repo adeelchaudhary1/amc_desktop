@@ -31,7 +31,48 @@ const CashDividend = () => {
   const [netAmount, setNetAmount] = useState('');
   const [wht, setWht] = useState('');
   const [zakat, setZakat] = useState('');
-
+  const [trx_id, setTrx_id] = useState<string>('')
+  const tx = sessionStorage.getItem('rejectedTxName') || '';
+  React.useEffect(() => {
+    const txName = sessionStorage.getItem('rejectedTxName') || '';
+    const flag = sessionStorage.getItem('rejectedFlag') || false;
+    if (flag && txName === 'cashdividend') {
+      const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
+      const beneobj = {
+        'account_name': obj.name_of_beneficiary,
+        'bank_name': obj.beneficiary_bank,
+        'branch_name': obj.beneficiary_branch,
+        'account_title': obj.beneficiary_account
+      }
+      setZakat(obj.zakat);
+      setBeneData(beneobj);
+      setInstrumentDate(obj.instrument_date);
+      setInstrumentType(obj.instrument_type);
+      setWht(obj.wht);
+      setFilioNo('123XYZ');
+      SetMop(obj.mode_of_payment)
+      SetMot(obj.type_of_transaction)
+      setTrx_id(obj.txn_id)
+      setInstrumentNo(obj.instrument_no)
+      setGrossAmount(obj.gross_amount)
+      setNetAmount(obj.net_amount)
+      setFund(obj.fund);
+      setAccNo(obj.account_no);
+      setAmcName(obj.amc_name);
+      const fetchAmcFirst = async () => {
+        try {
+          const amcResponse = await getAmc(email);
+          setAmcdata(amcResponse.data.data);
+          amcResponse.data.data.map((amc: any) => {
+            if (amc.name === obj.amc_name) {
+              getfundAndAccountByAmcCode(amc.amc_code)
+            }
+          });
+        } catch (error) { }
+      };
+      fetchAmcFirst();
+    }
+  }, [])
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
   //error getting hooks 
@@ -58,7 +99,9 @@ const CashDividend = () => {
   const [MOPData, setMOPData] = useState<any>([]);
   const [MOTData, setMOTData] = useState<any>([]);
   const [iTypeData, setITypeData] = useState<any>([]);
+  const [accFundLoading, setAccFundLoading] = useState<boolean>(false)
   const getfundAndAccountByAmcCode = async (code: string) => {
+    setAccFundLoading(true);
     allFunds.length = 0;
     setAllFunds(allFunds)
     //get funds by amc for dropdown
@@ -70,6 +113,7 @@ const CashDividend = () => {
       const accResponse = await getAccountByAmc(email, code);
       setAccountNoData(accResponse.data.data);
     } catch (error) { }
+    setAccFundLoading(false);
   }
   const getUnitHolderDetialByFolioNumber = async (code: string) => {
     //get funds by amc for dropdown
@@ -84,7 +128,7 @@ const CashDividend = () => {
         beneData.length = 0;
         setBeneData(beneData)
       }
-    } catch (error) {}
+    } catch (error) { }
   }
   React.useEffect(() => {
     const fetchAmc = async () => {
@@ -207,7 +251,7 @@ const CashDividend = () => {
     if (isValid) {
       setLoading(true);
       try {
-        const response = await addCashDividientTransaction(email, amcName, fund, accNo, mop, beneData.account_name, instrumentDate, instrumentNo, instrumentType, grossAmount, mot, beneData.account_name, wht, zakat, netAmount, beneData.bank_name, beneData.branch_name, beneData.account_title);
+        const response = await addCashDividientTransaction(email, amcName, fund, accNo, mop, beneData.account_name, instrumentDate, instrumentNo, instrumentType, grossAmount, mot, beneData.account_name, wht, zakat, netAmount, beneData.bank_name, beneData.branch_name, beneData.account_title, trx_id, folioNo);
         setAmcName('');
         setFund('');
         setAccNo('');
@@ -220,16 +264,20 @@ const CashDividend = () => {
         setInstrumentType('');
         setGrossAmount('');
         SetMot('');
+        setTrx_id('');
         setWht('');
         setZakat('');
         setNetAmount('');
+        sessionStorage.removeItem('rejectedTxObj');
+        sessionStorage.removeItem('rejectedTxName');
+        sessionStorage.removeItem('rejectedFlag');
         toast.success(response.data.message);
       } catch (error) {
         console.log(error.response.data.message[0]);
         toast.error(error.response.data.message[0]);
       }
       setLoading(false);
-    }else{
+    } else {
       setLoading(false);
     }
   }
@@ -242,65 +290,80 @@ const CashDividend = () => {
           <h1>Transaction Type</h1>
           <div className="form-holder">
             <div className="title-row">
-              <h3 className="mb-1">Cash Dividend</h3>
+              <h3 className="mb-1">{tx === 'cashdividend' ? 'Edit Cash Dividend' : 'Cash Dividend'}</h3>
             </div>
             <Row>
-              <Col md="6">
+              {/* <Col md="6">
                 <div className="input-holder left">
                   <p className="label">AMC Name</p>
-                  <div className="input-1">
-                    <select className="input-1" defaultValue={amcName} onChange={(e) => {
-                      console.log(e.target)
-                      let value = amcdata.filter((item: any) => {
-                        return item.amc_code === e.target.value;
-                      })
-                      setAmcName(value[0].name);
-                      setAmcError('');
-                      getfundAndAccountByAmcCode(e.target.value);
-                    }}>
-                      <option value="" defaultChecked hidden> Select An AMC</option>
-                      {renderAmcDropdown()}
-                    </select>
-                    {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
-                  </div>
+                  {tx === 'cashdividend' ?
+                    <input type="text" className="input-1 " style={{ opacity: '0.6' }} value={amcName} readOnly />
+                    :
+                    <div className="input-1">
+                      <select className="input-1" defaultValue={amcName} onChange={(e) => {
+                        console.log(e.target)
+                        let value = amcdata.filter((item: any) => {
+                          return item.amc_code === e.target.value;
+                        })
+                        setAmcName(value[0].name);
+                        setAmcError('');
+                        getfundAndAccountByAmcCode(e.target.value);
+                      }}>
+                        <option value="" defaultChecked hidden> Select An AMC</option>
+                        {renderAmcDropdown()}
+                      </select>
+                      {amcNameError ? <p className="error-labels error-message2">{amcNameError}</p> : ''}
+                    </div>}
                 </div>
-              </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Fund Name</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Fund</option>
-                      {renderFundsDropdown()}
-                    </select>
-                    {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
+              </Col> */}
               <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Account No</p>
-                  <div className="input-1" data-tip="First Select Amc">
-                    <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderAccountNoDropdown()}
-                    </select>
+                  <div className="input-1">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Account Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Account</option>
+                        {renderAccountNoDropdown()}
+                      </select>}
                     {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
               <Col md="6">
                 <div className="input-holder right">
+                  <p className="label">Fund Name</p>
+                  <div className="input-1" >
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
+                    {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            <Row>
+
+              <Col md="6">
+                <div className="input-holder left">
                   <p className="label">Mode Of Payment</p>
                   <div className="input-1">
                     <select className="input-1" value={mop} onChange={(e) => { SetMopError(''); SetMop(e.target.value) }}>
                       <option value="" defaultChecked hidden> Select Payment</option>
                       {renderModeOfPayments()}
                     </select>
-                    {mopError ? <p className="error-labels error-message">{mopError}</p> : ''}
+                    {mopError ? <p className="error-labels error-message2">{mopError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -316,7 +379,7 @@ const CashDividend = () => {
                       setFilioNoError('');
                       // getUnitHolderDetialByFolioNumber(e.target.value.toUpperCase())
                     }}
-                    onBlur={()=>{getUnitHolderDetialByFolioNumber(folioNo.toUpperCase())}}
+                      onBlur={() => { getUnitHolderDetialByFolioNumber(folioNo.toUpperCase()) }}
                     />
                     {folioNoError ? <p className="error-labels error-message2">{folioNoError}</p> : ''}
                   </div>
@@ -468,10 +531,12 @@ const CashDividend = () => {
                 </div>
               </Col>
             </Row>
-            <button className="btn-3" onClick={addCashDivident} disabled={Boolean(Loading)}>
-              {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
-                <span className="login-txt"> Loading...</span></> : <p>Create</p>}
-            </button>
+            <div className="hov">
+              <button className="btn-3" onClick={addCashDivident} disabled={Boolean(Loading)}>
+                {Loading ? <><span className="spinner-border login-txt spinner-border-sm" role="status" aria-hidden="true"></span>
+                  <span className="login-txt"> Loading...</span></> : <p>{tx === 'cashdividend' ? 'Edit' : 'Create'}</p>}
+              </button>
+            </div>
           </div>
 
         </div>
