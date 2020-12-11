@@ -20,7 +20,7 @@ jobs:
       - run: npm run package-win
       - store_artifacts:
           # TODO: Rename My Electron App Setup 0.1.0.exe to whatever your expected artifact name is
-          path: '~/repo/release/ElectronReact.exe'
+          path: '~/repo/release/ElectronReact Setup 1.4.0.exe'
           destination: 'Setup.exe'
 
 workflows:
