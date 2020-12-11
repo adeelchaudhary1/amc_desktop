@@ -1,0 +1,30 @@
+version: 2.1
+
+executors:
+  electron_windows:
+    docker:
+      - image: electronuserland/builder:wine
+
+jobs:
+  build_windows:
+    executor: electron_windows
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: npm install
+      - save_cache:
+          name: Save post-install node_modules into cache
+          key: app-v1-{{ arch }}-{{ .Branch }}-{{ checksum "package-lock.json" }}-{{ .Revision }}
+          paths:
+            - ~/repo/node_modules
+      - run: npm run package-win
+      - store_artifacts:
+          # TODO: Rename My Electron App Setup 0.1.0.exe to whatever your expected artifact name is
+          path: '~/repo/release/Trustee Setup 1.4.0.exe'
+          destination: 'Setup.exe'
+
+workflows:
+  version: 2
+  master_flow:
+    jobs:
+      - build_windows
