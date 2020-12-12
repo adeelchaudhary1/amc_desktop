@@ -9,6 +9,7 @@ jobs:
   build_windows:
     executor: electron_windows
     working_directory: ~/repo
+    "npmRebuild": false
     steps:
       - checkout
       - run: npm install
@@ -19,7 +20,6 @@ jobs:
             - ~/repo/node_modules
       - run: npm run package-win
       - store_artifacts:
-          # TODO: Rename My Electron App Setup 0.1.0.exe to whatever your expected artifact name is
           path: '~/repo/release/ElectronReact Setup 1.4.0.exe'
           destination: 'Setup.exe'
 
