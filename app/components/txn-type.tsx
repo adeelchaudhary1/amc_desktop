@@ -84,20 +84,13 @@ const TXNType = () => {
                   Redemption Bank
                 </div>
               </Col>
-              {/* <Col md="3" onClick={() => {
-                clearTransactiionHistory();
-                history.replace('/brokagefee')
-              }}>
-                <div className="txn-box">
-                  Brokerage Fee
-                </div>
-              </Col> */}
+
               <Col md="3" onClick={() => {
                 clearTransactiionHistory();
-                history.replace('/nccpl')
+                history.replace('/gainrealization')
               }}>
                 <div className="txn-box">
-                  NCCPL Transactions
+                  Gain Realization
                 </div>
               </Col>
               <Col md="3" onClick={() => {
@@ -109,7 +102,7 @@ const TXNType = () => {
                 </div>
               </Col>
             </Row>
-            
+
             <Row className="mt-4">
               <Col md="3" onClick={() => {
                 clearTransactiionHistory();
@@ -161,14 +154,7 @@ const TXNType = () => {
                   Sale of Unit
                 </div>
               </Col>
-              <Col md="3" onClick={() => {
-                clearTransactiionHistory();
-                history.replace('/gainrealization')
-              }}>
-                <div className="txn-box">
-                  Gain Realization
-                </div>
-              </Col>
+
 
             </Row>
           </div>

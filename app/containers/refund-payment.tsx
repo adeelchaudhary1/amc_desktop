@@ -297,6 +297,20 @@ const RefundPayment = () => {
                 </div>
               </Col>
             </Row>
+            <Row>
+              <Col md="6">
+                <div className="input-holder left">
+                  <p className="label">Type of Transaction</p>
+                  <div className="input-1">
+                    <select className="input-1" value={mot} onChange={(e) => { SetMotError(''); SetMot(e.target.value) }}>
+                      <option value="" defaultChecked hidden>Payment</option>
+                      {renderMOTDropdown()}
+                    </select>
+                    {motError ? <p className="error-labels error-message2">{motError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+            </Row>
             <div className="line"></div>
             <Row>
               <Col md="6">
@@ -323,7 +337,7 @@ const RefundPayment = () => {
                 </div>
               </Col>
             </Row>
-            <div className="line"></div>
+            {/* <div className="line"></div>
             <Row>
               <Col md="6">
                 <div className="input-holder left">
@@ -361,19 +375,8 @@ const RefundPayment = () => {
                   {instrumentDateError ? <p className="error-labels error-message2">{instrumentDateError}</p> : ''}
                 </div>
               </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Type of Transaction</p>
-                  <div className="input-1">
-                    <select className="input-1" value={mot} onChange={(e) => { SetMotError(''); SetMot(e.target.value) }}>
-                      <option value="" defaultChecked hidden>Payment</option>
-                      {renderMOTDropdown()}
-                    </select>
-                    {motError ? <p className="error-labels error-message">{motError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
+
+            </Row> */}
 
             <div className="line"></div>
             <Row>

@@ -304,7 +304,7 @@ const BankChanges = () => {
                   </div>
                 </div>
               </Col>
-              <Col md="6">
+              {/* <Col md="6">
                 <div className="input-holder right">
                   <p className="label">Instrument Type</p>
                   <div className="input-1">
@@ -315,7 +315,7 @@ const BankChanges = () => {
                     {intruTypeError ? <p className="error-labels error-message">{intruTypeError}</p> : ''}
                   </div>
                 </div>
-              </Col>
+              </Col> */}
             </Row>
             <Row>
               <Col md="6">
