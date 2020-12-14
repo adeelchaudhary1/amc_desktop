@@ -19,7 +19,7 @@ jobs:
             - ~/repo/node_modules
       - run: npm run package-win
       - store_artifacts:
-          path: '~/repo/release/ElectronReact Setup 1.4.0.exe'
+          path: '~/repo/release/AMC Setup 1.4.0.exe'
           destination: 'Setup.exe'
 
 workflows:
