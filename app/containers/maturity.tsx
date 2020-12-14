@@ -439,6 +439,32 @@ const Maturity = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
+                  <p className="label">Nature of Transaction</p>
+                  <div className="input-1">
+                    <select className="input-1" value={natureTx} onChange={(e) => { setNatureTxError(''); setNatureTx(e.target.value) }}>
+                      <option value="" defaultChecked hidden>Select</option>
+                      {renderNatureOfTxDropdown()}
+                    </select>
+                    {natureTxError ? <p className="error-labels error-message2">{natureTxError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+              <Col md="6">
+                <div className="input-holder right">
+                  <p className="label">Type of Transaction</p>
+                  <div className="input-1" >
+                    <select className="input-1" value={mot} onChange={(e) => { SetMotError(''); SetMot(e.target.value) }}>
+                      <option value="" defaultChecked hidden>Select</option>
+                      {renderMotDropdown()}
+                    </select>
+                    {motError ? <p className="error-labels error-message">{motError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+            </Row>
+            {/* <Row>
+              <Col md="6">
+                <div className="input-holder left">
                   <p className="label">Instrument Date</p>
                   <input type="date" className="input-1" value={instrumentDate} onChange={(e) => {
                     setInstrumentDate(e.target.value);
@@ -473,33 +499,9 @@ const Maturity = () => {
                   </div>
                 </div>
               </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Type of Transaction</p>
-                  <div className="input-1" >
-                    <select className="input-1" value={mot} onChange={(e) => { SetMotError(''); SetMot(e.target.value) }}>
-                      <option value="" defaultChecked hidden>Select</option>
-                      {renderMotDropdown()}
-                    </select>
-                    {motError ? <p className="error-labels error-message">{motError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Nature of Transaction</p>
-                  <div className="input-1">
-                    <select className="input-1" value={natureTx} onChange={(e) => { setNatureTxError(''); setNatureTx(e.target.value) }}>
-                      <option value="" defaultChecked hidden>Select</option>
-                      {renderNatureOfTxDropdown()}
-                    </select>
-                    {natureTxError ? <p className="error-labels error-message2">{natureTxError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
+
+            </Row> */}
+
             <div className="line"></div>
             <p className="t-3 mb-2">Security Info</p>
             <Row>

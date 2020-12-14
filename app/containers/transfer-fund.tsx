@@ -5,7 +5,7 @@ import { getAmc } from './../stores/services/amc.service';
 import { getFundByAmc, getInstrumentType } from './../stores/services/funds.service';
 import { addFundTransferTransaction, getModeOfTx } from './../stores/services/transactions.service';
 import { getAccountByAmc } from './../stores/services/account.service';
-import { getAllUnitHolderByFolioNo } from './../stores/services/unit-holder.service';
+import { useHistory } from 'react-router-dom';
 import {
   Container,
   Row,
@@ -15,6 +15,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import ReactTooltip from 'react-tooltip';
 import 'react-toastify/dist/ReactToastify.css';
 const TransferFund = () => {
+  const history = useHistory();
   //hooks for getting all inputs from user
   const [amcName, setAmcName] = useState('');
   const [fund, setFund] = useState('')
@@ -23,13 +24,11 @@ const TransferFund = () => {
   const [instrumentNo, setInstrumentNo] = useState('');
   const [mot, SetMot] = useState('');
   const [netAmount, setNetAmount] = useState('');
-  const [fromBank, setFromBank] = useState('');
-  const [fromBranch, setFromBranch] = useState('');
   const [fromAccNo, setFromAccNo] = useState('');
-  const [toBank, setToBank] = useState('');
-  const [toBranch, setToBranch] = useState('');
   const [toAccNo, setToAccNo] = useState('');
 
+  const [fromDetail, setFromDetail] = useState<any>([]);
+  const [toDetail, setToDetail] = useState<any>([]);
   const [trx_id, setTrx_id] = useState<string>('')
   React.useEffect(() => {
     const txName = sessionStorage.getItem('rejectedTxName') || '';
@@ -37,13 +36,24 @@ const TransferFund = () => {
     if (flag && txName === 'fundtransfer') {
       const obj = JSON.parse(sessionStorage.getItem('rejectedTxObj') || "");
       setInstrumentType(obj.instrument_type);
-
       setTrx_id(obj.txn_id)
       setInstrumentNo(obj.instrument_no)
       setFund(obj.fund);
       setAccNo(obj.account_no);
       setAmcName(obj.amc_name);
-
+      setFromAccNo(obj.sender_accountno)
+      setToAccNo(obj.receiver_accountno);
+      const senderObj = {
+        'bank_name': obj.sender_bank,
+        'branch_name': obj.sender_branch,
+      }
+      setFromDetail(senderObj)
+      const receiverObj = {
+        'bank_name': obj.receiver_bank,
+        'branch_name': obj.receiver_branch,
+      }
+      setToDetail(receiverObj);
+      setNetAmount(obj.net_amount)
       const fetchAmcFirst = async () => {
         try {
           const amcResponse = await getAmc(email);
@@ -61,11 +71,7 @@ const TransferFund = () => {
   // const [fileUpload, setFileUpload] = useState('');
   const email = sessionStorage.getItem('email') || '';
   //error getting hooks 
-  const [fromBankError, setFromBankError] = useState('');
-  const [fromBranchError, setFromBranchError] = useState('');
   const [fromAccNoError, setFromAccNoError] = useState('');
-  const [toBankError, setToBankError] = useState('');
-  const [toBranchError, setToBranchError] = useState('');
   const [toAccNoError, setToAccNoError] = useState('');
 
   const [motError, SetMotError] = useState('');
@@ -167,63 +173,76 @@ const TransferFund = () => {
   const tx = sessionStorage.getItem('rejectedTxName') || '';
 
   const validate = () => {
-    let amcErr, fundErr, accNoErr, iTypeErr, toBankErr, toBranchErr, toAccErr = "";
-    let iNoErr, netErr, fromBankErr, fromBranchErr, fromAccErr = "";
+    let amcErr, fundErr, accNoErr, iTypeErr, toAccErr = "";
+    let iNoErr, netErr, fromAccErr = "";
     amcName.trim() === '' ? amcErr = "Required" : amcErr = "";
     fund.trim() === '' ? fundErr = "Required" : fundErr = "";
     accNo.trim() === '' ? accNoErr = "Required" : accNoErr = "";
     instrumentType.trim() === '' ? iTypeErr = "Required" : iTypeErr = "";
     instrumentNo.trim() === '' ? iNoErr = "Required" : iNoErr = "";
     netAmount.trim() === '' ? netErr = "Required" : netErr = "";
-    fromBank.trim() === '' ? fromBankErr = "Required" : fromBankErr = "";
-    fromBranch.trim() === '' ? fromBranchErr = "Required" : fromBranchErr = "";
     fromAccNo.trim() === '' ? fromAccErr = "Required" : fromAccErr = "";
-    toBank.trim() === '' ? toBankErr = "Required" : toBankErr = "";
-    toBranch.trim() === '' ? toBranchErr = "Required" : toBranchErr = "";
     toAccNo.trim() === '' ? toAccErr = "Required" : toAccErr = "";
     if (amcErr || fundErr || accNoErr || iTypeErr || iNoErr || netErr ||
-      fromBankErr || fromBranchErr || fromAccErr || toBankErr || toBranchErr || toAccErr) {
+      fromAccErr || toAccErr) {
       setAmcError(amcErr);
       setFundError(fundErr);
       setAccNoError(accNoErr);
       setInstrumentTypeError(iTypeErr);
       setInstrumentNoError(iNoErr)
       setNetAmountError(netErr);
-      setFromBankError(fromBankErr)
-      setFromBranchError(fromBranchErr)
       setFromAccNoError(fromAccErr)
-      setToBankError(toBankErr)
-      setToBranchError(toBranchErr)
-      setToAccNoError(toAccErr)
+      setToAccNoError(toAccErr);
       return false;
     } else {
       return true;
     }
   }
+  const flag = sessionStorage.getItem('rejectedFlag') || false;
   const AddTransferFundtx = async () => {
     const isValid = validate();
     if (isValid) {
-      setLoading(true);
-      try {
-        const response = await addFundTransferTransaction(email, fund, accNo, mot, instrumentNo, instrumentType, fromBank, fromBranch, fromAccNo, toBank, toBranch, toAccNo, netAmount, amcName, trx_id);
-        setAmcName('');
-        setFund('');
-        setAccNo('');
-        setInstrumentNo('');
-        setInstrumentType('');
-        setNetAmount('');
-        toast.success(response.data.message);
-        sessionStorage.removeItem('rejectedTxObj');
-        sessionStorage.removeItem('rejectedTxName');
-        sessionStorage.removeItem('rejectedFlag');
-      } catch (error) {
-        console.log(error.response.data.message);
-        toast.error(error.response.data.message);
+      if (fromAccNo === toAccNo) {
+        toast.error('Transfer Accounts Should not be same');
+      } else {
+        setLoading(true);
+        try {
+          const response = await addFundTransferTransaction(email, fund, accNo, mot, instrumentNo, instrumentType, fromDetail.bank_name, fromDetail.branch_name, fromAccNo, toDetail.bank_name, toDetail.branch_name, toAccNo, netAmount, amcName, trx_id);
+          if (flag) {
+            history.push('/rejected-transactions')
+            sessionStorage.removeItem('rejectedTxObj');
+            sessionStorage.removeItem('rejectedTxName');
+            sessionStorage.removeItem('rejectedFlag');
+          }
+          setAmcName('');
+          setFund('');
+          setAccNo('');
+          setInstrumentNo('');
+          setInstrumentType('');
+          setNetAmount('');
+          let emptyArr: any[] = [];
+          setFromDetail(emptyArr)
+          setToDetail(emptyArr);
+          SetMot('');
+          setFromAccNo('');
+          setToAccNo('');
+          toast.success(response.data.message);
+        } catch (error) {
+          console.log(error.response.data.message);
+          toast.error(error.response.data.message);
+        }
+        setLoading(false);
       }
-      setLoading(false);
     } else {
       setLoading(false);
     }
+  }
+  const fromAccountDetial = (accountNo: string, detailType: boolean) => {
+    accountNoData.map((item: any) => {
+      if (item.account_no === accountNo) {
+        detailType ? setFromDetail(item) : setToDetail(item)
+      }
+    })
   }
   return (
     <>
@@ -231,7 +250,7 @@ const TransferFund = () => {
         <ToastContainer limit={1} />
         <Header />
         <div className="body-pad">
-          <h1>{tx === 'fundtransfer' ? 'Edit - Transfer of Fund' : 'Transfer of Fund (Under Development)'}</h1>
+          <h1>{tx === 'fundtransfer' ? 'Edit - Transfer of Fund' : 'Transfer of Fund'}</h1>
           <div className="form-holder">
             <Row>
               <Col md="6">
@@ -286,19 +305,21 @@ const TransferFund = () => {
                   </div>
                 </div>
               </Col>
-              <Col md="6">
+              {/* <Col md="6">
                 <div className="input-holder right">
                   <p className="label">Instrument No</p>
-                  <input type="text" className="input-1" value={instrumentNo} onChange={(e) => {
-                    setInstrumentNo(e.target.value);
-                    setInstrumentNoError('');
-                  }}
-                  />
-                  {instrumentNoError ? <p className="error-labels error-message">{instrumentNoError}</p> : ''}
+                  <div className="input-1">
+                    <input type="text" className="input-1" value={instrumentNo} onChange={(e) => {
+                      setInstrumentNo(e.target.value);
+                      setInstrumentNoError('');
+                    }}
+                    />
+                    {instrumentNoError ? <p className="error-labels error-message">{instrumentNoError}</p> : ''}
+                  </div>
                 </div>
-              </Col>
+              </Col> */}
             </Row>
-            <Row>
+            {/* <Row>
               <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Instrument Type</p>
@@ -310,8 +331,8 @@ const TransferFund = () => {
                     {instrumentTypeError ? <p className="error-labels error-message2">{instrumentTypeError}</p> : ''}
                   </div>
                 </div>
-              </Col>
-            </Row>
+              </Col> */}
+            {/* </Row> */}
             <div className="line"></div>
             <p className="t-3 mb-2">Transfer From</p>
             <Row>
@@ -326,48 +347,34 @@ const TransferFund = () => {
                         <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
                       </div>
                       :
-                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                      <select className="input-1" value={fromAccNo} onChange={(e) => {
+                        setFromAccNoError('');
+                        setFromAccNo(e.target.value)
+                        fromAccountDetial(e.target.value, true);
+                      }}>
                         <option value="" defaultChecked hidden> Select Account</option>
                         {renderAccountNoDropdown()}
                       </select>}
-                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
+                    {fromAccNoError ? <p className="error-labels error-message2">{fromAccNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
             </Row>
             <Row>
-              {/* <Col md="6">
+              <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Bank Name</p>
                   <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <input type="text" className="input-1 disable-input" data-tip="Add Folio Number" placeholder={beneDataError ? 'SelectAccount' : ''} value={beneData.account_name ? beneData.account_name : ''} readOnly />
+                  <input type="text" className="input-1 disable-input" data-tip="Select Account Number" value={fromDetail.bank_name ? fromDetail.bank_name : ''} readOnly />
                 </div>
               </Col>
               <Col md="6">
                 <div className="input-holder right">
                   <p className="label">Branch Name</p>
                   <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <input type="text" className="input-1 disable-input" data-tip="Add Folio Number" placeholder={beneDataError ? 'Add Folio Number' : ''} value={beneData.account_name ? beneData.account_name : ''} readOnly />
-                </div>
-              </Col> */}
-              {/* <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Bank Name</p>
-                  <div className="input-1">
-                    <p>Select Bank</p>
-                    <div className="icon"><img src="assets/arrow-down.svg" alt="" width="14" /></div>
-                  </div>
+                  <input type="text" className="input-1 disable-input" data-tip="Select Account Number" value={fromDetail.branch_name ? fromDetail.branch_name : ''} readOnly />
                 </div>
               </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Select Branch</p>
-                  <div className="input-1">
-                    <p>Select Branch Name</p>
-                    <div className="icon"><img src="assets/arrow-down.svg" alt="" width="14" /></div>
-                  </div>
-                </div>
-              </Col> */}
             </Row>
 
             <div className="line"></div>
@@ -384,48 +391,34 @@ const TransferFund = () => {
                         <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
                       </div>
                       :
-                      <select className="input-1" value={accNo} onChange={(e) => { setAccNoError(''); setAccNo(e.target.value) }}>
+                      <select className="input-1" value={toAccNo} onChange={(e) => {
+                        setToAccNoError('');
+                        setToAccNo(e.target.value);
+                        fromAccountDetial(e.target.value, false);
+                      }}>
                         <option value="" defaultChecked hidden> Select Account</option>
                         {renderAccountNoDropdown()}
                       </select>}
-                    {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
+                    {toAccNoError ? <p className="error-labels error-message2">{toAccNoError}</p> : ''}
                   </div>
                 </div>
               </Col>
             </Row>
             <Row>
-              {/* <Col md="6">
+              <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Bank Name</p>
-                  <div className="input-1">
-                    <p>Select Bank</p>
-                    <div className="icon"><img src="assets/arrow-down.svg" alt="" width="14" /></div>
-                  </div>
+                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
+                  <input type="text" className="input-1 disable-input" data-tip="Select Account Number" value={toDetail.bank_name ? toDetail.bank_name : ''} readOnly />
                 </div>
               </Col>
               <Col md="6">
                 <div className="input-holder right">
-                  <p className="label">Select Branch</p>
-                  <div className="input-1">
-                    <p>Select Branch Name</p>
-                    <div className="icon"><img src="assets/arrow-down.svg" alt="" width="14" /></div>
-                  </div>
-                </div>
-              </Col> */}
-              {/* <Col md="6">
-                <div className="input-holder left">
-                  <p className="label">Bank Name</p>
-                  <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <input type="text" className="input-1 disable-input" data-tip="Add Folio Number" placeholder={beneDataError ? 'Add Folio Number' : ''} value={beneData.account_name ? beneData.account_name : ''} readOnly />
-                </div>
-              </Col> */}
-              {/* <Col md="6">
-                <div className="input-holder right">
                   <p className="label">Branch Name</p>
                   <ReactTooltip textColor='white' backgroundColor='#1c5556' effect="float" />
-                  <input type="text" className="input-1 disable-input" data-tip="Add Folio Number" placeholder={beneDataError ? 'Add Folio Number' : ''} value={beneData.account_name ? beneData.account_name : ''} readOnly />
+                  <input type="text" className="input-1 disable-input" data-tip="Select Account Number" value={toDetail.branch_name ? toDetail.branch_name : ''} readOnly />
                 </div>
-              </Col> */}
+              </Col>
             </Row>
             <div className="line"></div>
             <Row>
@@ -446,8 +439,10 @@ const TransferFund = () => {
                 <div className="input-holder right">
                   <p className="label">Using File Upload</p>
                   <div className="multi-input">
-                    <div className="input-2"><p>Select File</p></div>
-                    <div className="icon"><img src="assets/upload.svg" alt="" width="20" /></div>
+                    <div className="input-1">
+                      <div className="input-2"><p>Select File</p></div>
+                      <div className="icon"><img src="assets/upload.svg" alt="" width="20" /></div>
+                    </div>
                   </div>
                 </div>
               </Col>

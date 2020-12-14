@@ -407,7 +407,7 @@ const MoneyMarket = () => {
               </Col>
             </Row>
             <div className="line"></div>
-            <Row>
+            {/* <Row>
               <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Instrument Date</p>
@@ -445,7 +445,7 @@ const MoneyMarket = () => {
                 </div>
               </Col>
             </Row>
-            <div className="line"></div>
+            <div className="line"></div> */}
             <p className="t-3 mb-2">Security Info</p>
             <Row>
               <Col md="6">

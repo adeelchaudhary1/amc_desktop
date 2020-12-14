@@ -365,7 +365,7 @@ const Inflow = () => {
                 </div>
               </Col>
             </Row>
-            <div className="line"></div>
+            {/* <div className="line"></div>
 
             <Row>
               <Col md="6">
@@ -404,23 +404,24 @@ const Inflow = () => {
                   {instrumentDateError ? <p className="error-labels error-message2">{instrumentDateError}</p> : ''}
                 </div>
               </Col>
+
+            </Row> */}
+
+            <div className="line"></div>
+            <Row>
               <Col md="6">
-                <div className="input-holder right">
+                <div className="input-holder left">
                   <p className="label">Description</p>
                   <input type="text" className="input-1" value={des} onChange={(e) => {
                     setDes(e.target.value);
                     setDesError('');
                   }}
                   />
-                  {desError ? <p className="error-labels error-message">{desError}</p> : ''}
+                  {desError ? <p className="error-labels error-message2">{desError}</p> : ''}
                 </div>
               </Col>
-            </Row>
-
-            <div className="line"></div>
-            <Row>
               <Col md="6">
-                <div className="input-holder left">
+                <div className="input-holder right">
                   <p className="label">Gross Amount</p>
                   <div className="input-1">
                     <input type="text" className="input-1" value={grossAmount} onChange={(e) => {
@@ -428,20 +429,7 @@ const Inflow = () => {
                       setGrossAmountError('');
                     }}
                     />
-                    {grossAmountError ? <p className="error-labels error-message2">{grossAmountError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Net Amount</p>
-                  <div className="input-1">
-                    <input type="text" className="input-1" value={netAmount} onChange={(e) => {
-                      setNetAmount(e.target.value);
-                      setNetAmountError('');
-                    }}
-                    />
-                    {netAmountError ? <p className="error-labels error-message">{netAmountError}</p> : ''}
+                    {grossAmountError ? <p className="error-labels error-message">{grossAmountError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -450,6 +438,19 @@ const Inflow = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
+                  <p className="label">Net Amount</p>
+                  <div className="input-1">
+                    <input type="text" className="input-1" value={netAmount} onChange={(e) => {
+                      setNetAmount(e.target.value);
+                      setNetAmountError('');
+                    }}
+                    />
+                    {netAmountError ? <p className="error-labels error-message2">{netAmountError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+              <Col md="6">
+                <div className="input-holder right">
                   <p className="label">Using File Upload</p>
                   <div className="multi-input disable">
                     <div className="input-2"><p>Select File</p></div>

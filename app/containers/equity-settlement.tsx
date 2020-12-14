@@ -395,26 +395,6 @@ const EquitySettlement = () => {
                 </div>
               </Col> */}
               <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Fund Name</p>
-                  <div className="input-1">
-                    {accFundLoading ?
-                      <div className="input-1">
-                        <div className="ml-2">Fund Loading</div>
-                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
-                      </div>
-                      :
-                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
-                        <option value="" defaultChecked hidden> Select Fund</option>
-                        {renderFundsDropdown()}
-                      </select>}
-                    {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-            </Row>
-            <Row>
-              <Col md="6">
                 <div className="input-holder left">
                   <p className="label">Account No</p>
                   <div className="input-1">
@@ -429,6 +409,24 @@ const EquitySettlement = () => {
                         {renderAccountNoDropdown()}
                       </select>}
                     {accNoError ? <p className="error-labels error-message2">{accNoError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+              <Col md="6">
+                <div className="input-holder right">
+                  <p className="label">Fund Name</p>
+                  <div className="input-1">
+                    {accFundLoading ?
+                      <div className="input-1">
+                        <div className="ml-2">Fund Loading</div>
+                        <img src="assets/spin-loader.svg" className="ml-auto pb-2 center" alt="" width={40} height={70} />
+                      </div>
+                      :
+                      <select className="input-1" value={fund} onChange={(e) => { setFundError(''); setFund(e.target.value) }}>
+                        <option value="" defaultChecked hidden> Select Fund</option>
+                        {renderFundsDropdown()}
+                      </select>}
+                    {fundError ? <p className="error-labels error-message">{fundError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -525,7 +523,7 @@ const EquitySettlement = () => {
                 </div>
               </Col>
             </Row>
-            <div className="line"></div>
+            {/* <div className="line"></div>
             <Row>
               <Col md="6">
                 <div className="input-holder left">
@@ -540,13 +538,13 @@ const EquitySettlement = () => {
               </Col>
               <Col md="6">
                 <div className="input-holder right">
-                  <p className="label">Type of Security</p>
+                  <p className="label">Instrument Type</p>
                   <div className="input-1">
-                    <select className="input-1" value={typeOfSecurity} onChange={(e) => { setTypeOfSecurityError(''); setTypeOfSecurity(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Account</option>
-                      {renderSecurityDataDropdown()}
+                    <select className="input-1" value={instrumentType} onChange={(e) => { setInstrumentTypeError(''); setInstrumentType(e.target.value) }}>
+                      <option value="" defaultChecked hidden> Select Type</option>
+                      {renderiTypeDataDropdown()}
                     </select>
-                    {typeOfSecurityError ? <p className="error-labels error-message">{typeOfSecurityError}</p> : ''}
+                    {instrumentTypeError ? <p className="error-labels error-message">{instrumentTypeError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -563,15 +561,21 @@ const EquitySettlement = () => {
                   {instrumentNoError ? <p className="error-labels error-message2">{instrumentNoError}</p> : ''}
                 </div>
               </Col>
+
+            </Row> */}
+
+            <div className="line"></div>
+            <Row>
               <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Instrument Type</p>
+                <div className="input-holder left">
+                  <p className="label">Trade Type</p>
                   <div className="input-1">
-                    <select className="input-1" value={instrumentType} onChange={(e) => { setInstrumentTypeError(''); setInstrumentType(e.target.value) }}>
-                      <option value="" defaultChecked hidden> Select Type</option>
-                      {renderiTypeDataDropdown()}
-                    </select>
-                    {instrumentTypeError ? <p className="error-labels error-message">{instrumentTypeError}</p> : ''}
+                    <input type="text" className="input-1" value={tradeType} onChange={(e) => {
+                      setTradeType(e.target.value);
+                      setTradeTypeError('');
+                    }}
+                    />
+                    {tradeTypeError ? <p className="error-labels error-message2">{tradeTypeError}</p> : ''}
                   </div>
                 </div>
               </Col>
@@ -591,19 +595,17 @@ const EquitySettlement = () => {
               </Col>
               <Col md="6">
                 <div className="input-holder right">
-                  <p className="label">Trade Type</p>
+                  <p className="label">Type of Security</p>
                   <div className="input-1">
-                    <input type="text" className="input-1" value={tradeType} onChange={(e) => {
-                      setTradeType(e.target.value);
-                      setTradeTypeError('');
-                    }}
-                    />
-                    {tradeTypeError ? <p className="error-labels error-message">{tradeTypeError}</p> : ''}
+                    <select className="input-1" value={typeOfSecurity} onChange={(e) => { setTypeOfSecurityError(''); setTypeOfSecurity(e.target.value) }}>
+                      <option value="" defaultChecked hidden> Select Account</option>
+                      {renderSecurityDataDropdown()}
+                    </select>
+                    {typeOfSecurityError ? <p className="error-labels error-message">{typeOfSecurityError}</p> : ''}
                   </div>
                 </div>
               </Col>
             </Row>
-            <div className="line"></div>
             <Row>
               <Col md="6">
                 <div className="input-holder left">

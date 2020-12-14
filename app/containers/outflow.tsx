@@ -367,7 +367,7 @@ const Outflow = () => {
                 </div>
               </Col>
             </Row>
-            <div className="line"></div>
+            {/* <div className="line"></div>
             <Row>
               <Col md="6">
                 <div className="input-holder left">
@@ -405,18 +405,8 @@ const Outflow = () => {
                   {instrumentDateError ? <p className="error-labels error-message2">{instrumentDateError}</p> : ''}
                 </div>
               </Col>
-              <Col md="6">
-                <div className="input-holder right">
-                  <p className="label">Description</p>
-                  <input type="text" className="input-1" value={des} onChange={(e) => {
-                    setDes(e.target.value);
-                    setDesError('');
-                  }}
-                  />
-                  {desError ? <p className="error-labels error-message">{desError}</p> : ''}
-                </div>
-              </Col>
-            </Row>
+
+            </Row> */}
 
             <div className="line"></div>
             <Row>
@@ -450,7 +440,18 @@ const Outflow = () => {
 
             <Row>
               <Col md="6">
-                <div className="input-holder disable left">
+                <div className="input-holder left">
+                  <p className="label">Description</p>
+                  <input type="text" className="input-1" value={des} onChange={(e) => {
+                    setDes(e.target.value);
+                    setDesError('');
+                  }}
+                  />
+                  {desError ? <p className="error-labels error-message2">{desError}</p> : ''}
+                </div>
+              </Col>
+              <Col md="6">
+                <div className="input-holder disable right">
                   <p className="label">Using File Upload</p>
                   <div className="multi-input ">
                     <div className="input-2"><p>Select File</p></div>

@@ -419,7 +419,7 @@ const GainRealization = () => {
                             </Col>
                         </Row>
                         <div className="line"></div>
-                        <Row>
+                        {/* <Row>
                             <Col md="6">
                                 <div className="input-holder left">
                                     <p className="label">Instrument Type</p>
@@ -457,7 +457,7 @@ const GainRealization = () => {
                                 </div>
                             </Col>
                         </Row>
-                        <div className="line"></div>
+                        <div className="line"></div> */}
                         <Row>
                             <Col md="6">
                                 <div className="input-holder left">

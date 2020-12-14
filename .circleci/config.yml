@@ -20,7 +20,7 @@ jobs:
       - run: npm run package-win
       - store_artifacts:
           path: '~/repo/release/AMC Setup 1.4.0.exe'
-          destination: 'Setup.exe'
+          destination: 'AMC_Setup.exe'
 
 workflows:
   version: 2

@@ -348,7 +348,7 @@ const SaleOfUnit = () => {
                             </Col>
                         </Row>
 
-                        <div className="line"></div>
+                        {/* <div className="line"></div>
                         <Row>
                             <Col md="6">
                                 <div className="input-holder left">
@@ -386,7 +386,7 @@ const SaleOfUnit = () => {
                                     {instrumentDateError ? <p className="error-labels error-message2">{instrumentDateError}</p> : ''}
                                 </div>
                             </Col>
-                        </Row>
+                        </Row> */}
                         <div className="line"></div>
                         <Row>
                             <Col md="6">

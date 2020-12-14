@@ -194,111 +194,23 @@ const PendingTransactions = () => {
                   <div className="mr-5">
                     <div className="row d-flex align-items-center">
                       <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="listed"
-                          name="type"
-                          value="listed"
-                          checked={status === 'COMPLIANCE'}
-                          onChange={() => {
-                            setStatus('COMPLIANCE');
+                        <select
+                          className="input-1"
+                          onChange={(e) => {
+                            setStatus(e.target.value);
                           }}
-                        />
-                        <label className="mb-0 ml-2">Compliance</label>
-                      </div>
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'INREVIEW'}
-                          onChange={() => {
-                            setStatus('INREVIEW');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">In Review</label>
-                      </div>
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'SIGNATORY-A'}
-                          onChange={() => {
-                            setStatus('SIGNATORY-A');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">Signatory A</label>
-                      </div>
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'SIGNATORY-B'}
-                          onChange={() => {
-                            setStatus('SIGNATORY-B');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">Signatory B</label>
-                      </div>
-                    </div>
-
-                    <div className="d-flex row align-items-center">
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'AUTHORIZER-A'}
-                          onChange={() => {
-                            setStatus('AUTHORIZER-A');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">Authorizer A</label>
-                      </div>
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'AUTHORIZER-B'}
-                          onChange={() => {
-                            setStatus('AUTHORIZER-B');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">Authorizer B</label>
-                      </div>
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'COMPLETED'}
-                          onChange={() => {
-                            setStatus('COMPLETED');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">Completed</label>
-                      </div>
-                      <div className="ml-4">
-                        <input
-                          type="radio"
-                          id="unlisted"
-                          name="type"
-                          value="unlisted"
-                          checked={status === 'REJECTED'}
-                          onChange={() => {
-                            setStatus('REJECTED');
-                          }}
-                        />
-                        <label className="mb-0 ml-2">Rejected</label>
+                          value={status}
+                        >
+                          <option value="-1">Select type</option>
+                          <option value="COMPLIANCE">Compliance</option>
+                          <option value="AUTHORIZER-A">Authorizer A</option>
+                          <option value="AUTHORIZER-B">Authorizer B</option>
+                          <option value="INREVIEW">In Review</option>
+                          <option value="SIGNATORY-A">Signatory A</option>
+                          <option value="SIGNATORY-B">Signatory B</option>
+                          <option value="COMPLETED">Completed</option>
+                          <option value="REJECTED">Rejected</option>
+                        </select>
                       </div>
                     </div>
                   </div>

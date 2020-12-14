@@ -465,7 +465,7 @@ const Redemption = () => {
               </Col>
             </Row> */}
 
-            <div className="line"></div>
+            {/* <div className="line"></div>
             <Row>
               <Col md="6">
                 <div className="input-holder left">
@@ -492,31 +492,19 @@ const Redemption = () => {
               </Col>
             </Row>
             <Row>
+
               <Col md="6">
                 <div className="input-holder left">
-                  <p className="label">Net Amount</p>
-                  <div className="input-1">
-                    <input type="text" className="input-1" value={netAmount} onChange={(e) => {
-                      setNetAmount(e.target.value);
-                      setNetAmountError('');
-                    }}
-                    />
-                    {netAmountError ? <p className="error-labels error-message2">{netAmountError}</p> : ''}
-                  </div>
-                </div>
-              </Col>
-              <Col md="6">
-                <div className="input-holder right">
                   <p className="label">Instrument No</p>
                   <input type="text" className="input-1" value={instrumentNo} onChange={(e) => {
                     setInstrumentNo(e.target.value);
                     setInstrumentNoError('');
                   }}
                   />
-                  {instrumentNoError ? <p className="error-labels error-message">{instrumentNoError}</p> : ''}
+                  {instrumentNoError ? <p className="error-labels error-message2">{instrumentNoError}</p> : ''}
                 </div>
               </Col>
-            </Row>
+            </Row> */}
             <div className="line"></div>
             <Row>
               <Col md="6">
@@ -589,6 +577,19 @@ const Redemption = () => {
             <Row>
               <Col md="6">
                 <div className="input-holder left">
+                  <p className="label">Net Amount</p>
+                  <div className="input-1">
+                    <input type="text" className="input-1" value={netAmount} onChange={(e) => {
+                      setNetAmount(e.target.value);
+                      setNetAmountError('');
+                    }}
+                    />
+                    {netAmountError ? <p className="error-labels error-message2">{netAmountError}</p> : ''}
+                  </div>
+                </div>
+              </Col>
+              <Col md="6">
+                <div className="input-holder right">
                   <p className="label">Using File Upload</p>
                   <div className="multi-input disable">
                     <div className="input-2"><p>Select File</p></div>
